@@ -13,7 +13,7 @@ dependencies {
     api("com.tngtech.archunit:archunit:1.4.2")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:6.1.2")
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
 }
 

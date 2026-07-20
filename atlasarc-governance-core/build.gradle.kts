@@ -10,10 +10,10 @@ plugins {
 base.archivesName.set("atlasarc-governance-core")
 
 dependencies {
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
 
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:6.1.2")
 }
 
 mavenPublishing {
