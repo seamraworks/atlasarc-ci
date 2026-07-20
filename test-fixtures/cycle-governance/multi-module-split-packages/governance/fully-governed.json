@@ -1,0 +1,66 @@
+{
+  "$schema": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "schemaVersion": 1,
+  "records": {
+    "accept-billing-shared-cycle": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "package",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "acceptance.shared.left",
+        "module": "billing"
+      },
+      "target": {
+        "architectureUnit": "acceptance.shared.right",
+        "module": "billing"
+      },
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "Regression proof for the billing module only."
+    },
+    "accept-orders-shared-cycle": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "package",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "acceptance.shared.left",
+        "module": "orders"
+      },
+      "target": {
+        "architectureUnit": "acceptance.shared.right",
+        "module": "orders"
+      },
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "Regression proof for the orders module only."
+    },
+    "accept-reporting-cycle": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "package",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "acceptance.reporting.input",
+        "module": "reporting"
+      },
+      "target": {
+        "architectureUnit": "acceptance.reporting.output",
+        "module": "reporting"
+      },
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "Regression proof for the independent reporting cycle."
+    }
+  }
+}

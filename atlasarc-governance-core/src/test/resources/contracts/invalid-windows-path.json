@@ -1,0 +1,25 @@
+{
+  "$schema": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "schemaVersion": 1,
+  "records": {
+    "windows-path": {
+      "analysisSource": {
+        "id": "ts:manifest:web",
+        "backend": "typescript-artifact",
+        "language": "typescript"
+      },
+      "scope": "source-file",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "apps\\web\\src",
+        "sourceFile": "C:\\work\\app.ts"
+      },
+      "target": {
+        "architectureUnit": "packages/api/src"
+      },
+      "referenceIds": [],
+      "kind": "DEBT",
+      "reason": "This fixture must fail path validation."
+    }
+  }
+}

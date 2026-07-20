@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlasarc.io/schemas/evaluator-config-v1.schema.json",
+  "title": "AtlasArc governance evaluator configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "configVersion", "sources"],
+  "properties": {
+    "$schema": { "const": "https://atlasarc.io/schemas/evaluator-config-v1.schema.json" },
+    "configVersion": { "const": 1 },
+    "repositoryRoot": { "type": "string", "minLength": 1, "default": "." },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/source" }
+    }
+  },
+  "$defs": {
+    "pathSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "module": { "type": "string", "minLength": 1 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "backend"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "backend": { "enum": ["jvm-bytecode", "typescript-artifact"] },
+        "root": { "type": "string", "minLength": 1, "default": "." },
+        "classDirectories": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pathSpec" },
+          "default": []
+        },
+        "sourceRoots": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pathSpec" },
+          "default": []
+        },
+        "dependencyCruiserJson": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "backend": { "const": "jvm-bytecode" } } },
+          "then": {
+            "required": ["classDirectories"],
+            "properties": {
+              "classDirectories": {
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/pathSpec" }
+              },
+              "sourceRoots": {
+                "items": { "$ref": "#/$defs/pathSpec" }
+              }
+            },
+            "not": { "required": ["dependencyCruiserJson"] }
+          }
+        },
+        {
+          "if": { "properties": { "backend": { "const": "typescript-artifact" } } },
+          "then": {
+            "required": ["dependencyCruiserJson"],
+            "properties": { "classDirectories": { "maxItems": 0 } }
+          }
+        }
+      ]
+    }
+  }
+}

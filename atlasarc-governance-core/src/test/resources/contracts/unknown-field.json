@@ -1,0 +1,6 @@
+{
+  "$schema": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "schemaVersion": 1,
+  "records": {},
+  "futureBehavior": "must not be silently discarded"
+}

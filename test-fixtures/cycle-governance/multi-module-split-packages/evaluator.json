@@ -1,0 +1,21 @@
+{
+  "$schema": "https://atlasarc.io/schemas/evaluator-config-v1.schema.json",
+  "configVersion": 1,
+  "repositoryRoot": ".",
+  "sources": [
+    {
+      "id": "jvm:whole-project",
+      "backend": "jvm-bytecode",
+      "classDirectories": [
+        {"path": "modules/orders/target/classes", "module": "orders"},
+        {"path": "modules/billing/target/classes", "module": "billing"},
+        {"path": "modules/reporting/target/classes", "module": "reporting"}
+      ],
+      "sourceRoots": [
+        {"path": "modules/orders/src/main/java", "module": "orders"},
+        {"path": "modules/billing/src/main/java", "module": "billing"},
+        {"path": "modules/reporting/src/main/java", "module": "reporting"}
+      ]
+    }
+  ]
+}

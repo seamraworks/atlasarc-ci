@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: maven-central
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Derive release version
+        id: version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and verify
+        run: ./gradlew releaseCandidate -PreleaseVersion=${{ steps.version.outputs.version }}
+
+      - name: Publish signed Maven artifacts
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: >-
+          ./gradlew
+          :atlasarc-governance-core:publishAndReleaseToMavenCentral
+          :atlasarc-archunit:publishAndReleaseToMavenCentral
+          :atlasarc-ci:publishAndReleaseToMavenCentral
+          -PreleaseVersion=${{ steps.version.outputs.version }}
+
+      - name: Collect GitHub release assets
+        shell: bash
+        run: |
+          mkdir -p build/github-release
+          cp atlasarc-ci/build/distributions/*.zip build/github-release/
+          cp atlasarc-ci/build/libs/*-standalone.jar build/github-release/
+          cp build/reports/cyclonedx/atlasarc-ci.cdx.json build/github-release/
+          cp atlasarc-ci/build/release/SHA256SUMS build/github-release/
+
+      - name: Attest release provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: build/github-release/*
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: >-
+          gh release create "$GITHUB_REF_NAME"
+          build/github-release/*
+          --verify-tag
+          --generate-notes
+          --title "AtlasArc CI ${{ steps.version.outputs.version }}"
