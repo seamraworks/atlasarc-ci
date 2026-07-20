@@ -1,0 +1,15 @@
+{
+  "$schema": "https://atlasarc.io/schemas/evaluator-config-v1.schema.json",
+  "configVersion": 1,
+  "repositoryRoot": ".",
+  "sources": [
+    {
+      "id": "typescript:frontend",
+      "backend": "typescript-artifact",
+      "root": ".",
+      "classDirectories": [],
+      "sourceRoots": [],
+      "dependencyCruiserJson": ".atlasarc/depgraph.json"
+    }
+  ]
+}

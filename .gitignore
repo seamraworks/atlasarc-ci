@@ -1,0 +1,11 @@
+target/
+.idea/
+**/target/
+.gradle/
+**/build/
+out/
+*.iml
+.DS_Store
+Thumbs.db
+local.properties
+*.asc

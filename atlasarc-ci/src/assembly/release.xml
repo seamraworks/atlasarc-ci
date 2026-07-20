@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+  <id>standalone</id>
+  <formats><format>zip</format></formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <files>
+    <file><source>${project.build.directory}/${project.build.finalName}-standalone.jar</source><destName>${project.build.finalName}-standalone.jar</destName></file>
+    <file><source>${project.build.directory}/SHA256SUMS</source><destName>SHA256SUMS</destName></file>
+    <file><source>${project.basedir}/../LICENSE</source><destName>LICENSE</destName></file>
+    <file><source>${project.basedir}/../NOTICE</source><destName>NOTICE</destName></file>
+    <file><source>${project.basedir}/../THIRD-PARTY-NOTICES.md</source><destName>THIRD-PARTY-NOTICES.md</destName></file>
+    <file><source>${project.basedir}/../README.md</source><destName>README.md</destName></file>
+    <file><source>${project.basedir}/src/main/resources/evaluator-config.schema.json</source><destName>evaluator-config.schema.json</destName></file>
+    <file><source>${project.basedir}/../atlasarc-governance-core/src/main/resources/io/atlasarc/governance/cycle-governance-v1.schema.json</source><destName>cycle-governance-v1.schema.json</destName></file>
+  </files>
+  <fileSets>
+    <fileSet><directory>${project.basedir}/../docs</directory><outputDirectory>docs</outputDirectory><includes><include>**/*.md</include></includes></fileSet>
+    <fileSet><directory>${project.basedir}/examples</directory><outputDirectory>examples</outputDirectory></fileSet>
+  </fileSets>
+</assembly>

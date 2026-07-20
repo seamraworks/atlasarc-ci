@@ -1,0 +1,180 @@
+{
+  "$schema": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "schemaVersion": 1,
+  "records": {
+    "java-member-incoming": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "member",
+      "ownerSide": "target",
+      "source": {
+        "architectureUnit": "com.example.checkout",
+        "type": "com.example.checkout.Cart"
+      },
+      "target": {
+        "architectureUnit": "com.example.billing",
+        "type": "com.example.billing.InvoiceService",
+        "sourceFile": "modules/billing/src/main/java/com/example/billing/InvoiceService.java",
+        "member": {
+          "name": "fromLegacy",
+          "descriptor": "(Ljava/lang/String;)V"
+        }
+      },
+      "referenceIds": [],
+      "kind": "DEBT",
+      "reason": "Legacy checkout still calls the old billing bridge.",
+      "ticket": "ARCH-142"
+    },
+    "java-package-outgoing": {
+      "analysisSource": {
+        "id": "jvm:module:orders",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "package",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "com.example.orders"
+      },
+      "target": {
+        "architectureUnit": "com.example.inventory"
+      },
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "The transactional boundary is owned by orders."
+    },
+    "java-reference": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "reference",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "com.example.api",
+        "type": "com.example.api.Controller"
+      },
+      "target": {
+        "architectureUnit": "com.example.service",
+        "type": "com.example.service.Service"
+      },
+      "dependencyKind": "method-call",
+      "referenceIds": [
+        "jvm:com.example.api.Controller#load()->com.example.service.Service#find()"
+      ],
+      "kind": "INTENTIONAL",
+      "reason": "This adapter reference is the intended entry point."
+    },
+    "java-type-incoming": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "type",
+      "ownerSide": "target",
+      "source": {
+        "architectureUnit": "com.example.orders"
+      },
+      "target": {
+        "architectureUnit": "com.example.shared",
+        "type": "com.example.shared.DomainClock"
+      },
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "The shared clock is the approved temporal boundary."
+    },
+    "kotlin-member-outgoing": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "kotlin"
+      },
+      "scope": "member",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "org.example.café",
+        "type": "org.example.café.RésuméService",
+        "sourceFile": "src/main/kotlin/org/example/café/RésuméService.kt",
+        "member": {
+          "name": "load résumé"
+        }
+      },
+      "target": {
+        "architectureUnit": "org.example.store"
+      },
+      "referenceIds": [],
+      "kind": "DEBT",
+      "reason": "Unicode identities remain reviewable and byte-stable."
+    },
+    "kotlin-package-incoming": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "kotlin"
+      },
+      "scope": "package",
+      "ownerSide": "target",
+      "source": {
+        "architectureUnit": "org.example.feature"
+      },
+      "target": {
+        "architectureUnit": "org.example.platform"
+      },
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "Kotlin package governance is recorded without modifying source declarations."
+    },
+    "typescript-file-type-only": {
+      "analysisSource": {
+        "id": "ts:manifest:admin-app",
+        "backend": "typescript-artifact",
+        "language": "typescript"
+      },
+      "scope": "source-file",
+      "ownerSide": "source",
+      "source": {
+        "architectureUnit": "apps/Admin Portal/src/features/Orders",
+        "sourceFile": "apps/Admin Portal/src/features/Orders/Order View.ts"
+      },
+      "target": {
+        "architectureUnit": "packages/API/src/contracts",
+        "sourceFile": "packages/API/src/contracts/Order.ts"
+      },
+      "dependencyKind": "type-only-import",
+      "referenceIds": [],
+      "kind": "INTENTIONAL",
+      "reason": "The UI may depend on the public type contract.",
+      "display": {
+        "source": "Order View",
+        "target": "Order contract",
+        "sourcePath": "apps/Admin Portal/src/features/Orders/Order View.ts",
+        "targetPath": "packages/API/src/contracts/Order.ts"
+      }
+    },
+    "typescript-folder-runtime": {
+      "analysisSource": {
+        "id": "ts:manifest:shop",
+        "backend": "typescript-artifact",
+        "language": "typescript"
+      },
+      "scope": "source-folder",
+      "ownerSide": "target",
+      "source": {
+        "architectureUnit": "apps/shop/src/Checkout"
+      },
+      "target": {
+        "architectureUnit": "packages/payments/src/Public"
+      },
+      "dependencyKind": "runtime-import",
+      "referenceIds": [],
+      "kind": "DEBT",
+      "reason": "Remove the reverse runtime dependency before the next release.",
+      "ticket": "WEB-91"
+    }
+  }
+}

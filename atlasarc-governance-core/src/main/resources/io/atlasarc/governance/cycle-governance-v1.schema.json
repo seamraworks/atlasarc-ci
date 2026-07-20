@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "title": "AtlasArc.io cycle governance",
+  "description": "Repository-owned cycle decisions consumed by AtlasArc.io IDE and CI evaluation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "records"],
+  "properties": {
+    "$schema": {
+      "const": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "records": {
+      "type": "object",
+      "maxProperties": 10000,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysisSource",
+        "scope",
+        "ownerSide",
+        "source",
+        "target",
+        "referenceIds",
+        "kind",
+        "reason"
+      ],
+      "properties": {
+        "analysisSource": { "$ref": "#/$defs/analysisSource" },
+        "scope": {
+          "enum": ["package", "type", "member", "source-folder", "source-file", "reference"]
+        },
+        "ownerSide": {
+          "enum": ["source", "target"]
+        },
+        "source": { "$ref": "#/$defs/identity" },
+        "target": { "$ref": "#/$defs/identity" },
+        "dependencyKind": {
+          "enum": [
+            "method-call",
+            "constructor-call",
+            "field-access",
+            "structural",
+            "runtime-import",
+            "type-only-import",
+            "dynamic-import",
+            "re-export",
+            "unknown"
+          ]
+        },
+        "referenceIds": {
+          "type": "array",
+          "maxItems": 1000,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "kind": {
+          "enum": ["INTENTIONAL", "DEBT"]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "ticket": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "display": { "$ref": "#/$defs/display" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "scope": { "const": "reference" } },
+            "required": ["scope"]
+          },
+          "then": {
+            "properties": { "ownerSide": { "const": "source" } }
+          }
+        }
+      ]
+    },
+    "analysisSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "backend", "language"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "backend": {
+          "enum": ["jvm-bytecode", "typescript-artifact"]
+        },
+        "language": {
+          "enum": ["java", "kotlin", "typescript"]
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["architectureUnit"],
+      "properties": {
+        "architectureUnit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "sourceFile": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "member": { "$ref": "#/$defs/member" },
+        "module": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Stable JVM module identity used to disambiguate split packages."
+        }
+      }
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "descriptor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      }
+    },
+    "display": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "targetPath": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        }
+      }
+    }
+  }
+}
