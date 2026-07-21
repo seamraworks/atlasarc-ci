@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://atlasarc.io/schemas/repository-scope-v1.schema.json",
+  "title": "AtlasArc.io repository analysis scope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "exclusions"],
+  "properties": {
+    "$schema": { "const": "https://atlasarc.io/schemas/repository-scope-v1.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "exclusions": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$" },
+      "additionalProperties": { "$ref": "#/$defs/exclusion" }
+    }
+  },
+  "$defs": {
+    "exclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selector", "reason"],
+      "properties": {
+        "selector": { "$ref": "#/$defs/selector" },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1000, "pattern": "\\S" }
+      }
+    },
+    "selector": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "pattern"],
+          "properties": {
+            "kind": { "const": "jvm-package-pattern" },
+            "pattern": { "type": "string", "minLength": 1 },
+            "module": { "type": ["string", "null"], "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "pattern"],
+          "properties": {
+            "kind": { "const": "typescript-source-folder-pattern" },
+            "pattern": { "type": "string", "minLength": 1 },
+            "module": { "type": "null" }
+          }
+        }
+      ]
+    }
+  }
+}

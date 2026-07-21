@@ -6,6 +6,7 @@ import io.atlasarc.evaluation.GovernanceEvaluationResult
 import io.atlasarc.evaluation.GovernanceEvaluationVerdict
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import io.atlasarc.scope.RepositoryScopeEvaluationContext
 
 const val DEFAULT_CYCLE_DEBT_BASELINE_REASON: String =
     "Established as existing cycle debt by the AtlasArc CI baseline."
@@ -68,6 +69,7 @@ class CycleDebtBaselinePlanner private constructor(
         inputs: List<GovernanceEvaluationInput>,
         options: CycleDebtBaselineOptions = CycleDebtBaselineOptions(),
         evaluatorVersion: String = "development",
+        repositoryScope: RepositoryScopeEvaluationContext = RepositoryScopeEvaluationContext(),
     ): CycleDebtBaselineResult {
         val inputDiagnostics = validateInputs(inputs, options)
         val documentDiagnostics = when (val encoded = codec.encode(document)) {
@@ -79,7 +81,7 @@ class CycleDebtBaselinePlanner private constructor(
         val preflight = (documentDiagnostics + inputDiagnostics).distinct()
         if (preflight.isNotEmpty()) return CycleDebtBaselineResult.Refused(preflight)
 
-        val starting = evaluator.evaluate(document, inputs, evaluatorVersion)
+        val starting = evaluator.evaluate(document, inputs, evaluatorVersion, repositoryScope)
         if (starting.verdict == GovernanceEvaluationVerdict.INVALID) {
             return CycleDebtBaselineResult.Refused(
                 starting.issues.map { issue ->
@@ -173,7 +175,7 @@ class CycleDebtBaselinePlanner private constructor(
             return CycleDebtBaselineResult.Refused(serializationDiagnostics)
         }
 
-        val resulting = evaluator.evaluate(proposed, inputs, evaluatorVersion)
+        val resulting = evaluator.evaluate(proposed, inputs, evaluatorVersion, repositoryScope)
         if (resulting.verdict != GovernanceEvaluationVerdict.CLEAN) {
             val diagnostics = resulting.issues.map { issue ->
                 CycleDebtBaselineDiagnostic(

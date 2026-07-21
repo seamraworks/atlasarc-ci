@@ -3,6 +3,8 @@
 The evaluator configuration tells AtlasArc.io CI where to obtain **current dependency evidence**.
 It does not contain acceptance decisions. Those live separately in the repository's
 `.atlasarc/governance/cycles.json` file; see [Govern cycle decisions](governance-decisions.md).
+It also does not contain repository exclusions. Those live at
+`.atlasarc/governance/scope.json`; see [Define repository analysis scope](repository-scope.md).
 
 The conventional location is `.atlasarc/evaluator.json`, although `--config` accepts any path. A
 committed configuration gives developers and CI the same evidence boundary and avoids a pipeline
@@ -13,11 +15,12 @@ that silently evaluates a different part of the repository.
 For every configured source, the evaluator:
 
 1. locates the owning Git repository;
-2. loads and validates `.atlasarc/governance/cycles.json` from that repository root;
+2. loads and validates `.atlasarc/governance/scope.json` and `.atlasarc/governance/cycles.json`;
 3. acquires dependency evidence from the configured JVM output or TypeScript artifact;
 4. rejects missing, stale, ambiguous, or inconsistent evidence;
-5. evaluates all sources with the same governance engine; and
-6. emits a human, JSON, or SARIF result and a process exit code.
+5. removes repository-scoped architecture units and their incident dependencies;
+6. evaluates all retained sources with the same governance engine; and
+7. emits a human, JSON, or SARIF result and a process exit code.
 
 The evaluator never invokes a compiler, Maven, Gradle, npm, or dependency-cruiser. Produce the
 artifacts first, then run the gate.

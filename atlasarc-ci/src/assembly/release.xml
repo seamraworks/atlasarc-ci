@@ -13,6 +13,7 @@
     <file><source>${project.basedir}/../README.md</source><destName>README.md</destName></file>
     <file><source>${project.basedir}/src/main/resources/evaluator-config.schema.json</source><destName>evaluator-config.schema.json</destName></file>
     <file><source>${project.basedir}/../atlasarc-governance-core/src/main/resources/io/atlasarc/governance/cycle-governance-v1.schema.json</source><destName>cycle-governance-v1.schema.json</destName></file>
+    <file><source>${project.basedir}/../atlasarc-governance-core/src/main/resources/io/atlasarc/scope/repository-scope-v1.schema.json</source><destName>repository-scope-v1.schema.json</destName></file>
   </files>
   <fileSets>
     <fileSet><directory>${project.basedir}/../docs</directory><outputDirectory>docs</outputDirectory><includes><include>**/*.md</include></includes></fileSet>

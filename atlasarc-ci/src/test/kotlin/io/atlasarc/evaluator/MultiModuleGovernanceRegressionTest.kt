@@ -85,6 +85,31 @@ class MultiModuleGovernanceRegressionTest {
     }
 
     @Test
+    fun `module-qualified repository scope removes only the owned split package`() {
+        useScope("billing-left.json")
+
+        val result = evaluate("empty.json").result
+
+        assertEquals(
+            setOf(
+                setOf("orders:acceptance.shared.left", "orders:acceptance.shared.right"),
+                setOf("reporting:acceptance.reporting.input", "reporting:acceptance.reporting.output"),
+            ),
+            result.problemGroups.map { group ->
+                group.members.mapTo(sortedSetOf()) { "${it.module}:${it.architectureUnit}" }
+            }.toSet(),
+        )
+        assertTrue(result.repositoryScope.exists)
+        assertEquals(1, result.repositoryScope.summary.appliedRuleCount)
+        assertEquals(1, result.repositoryScope.summary.excludedArchitectureUnitCount)
+        assertFalse(
+            result.problemGroups.flatMap { it.members }.any {
+                it.module == "billing" && it.architectureUnit == "acceptance.shared.left"
+            },
+        )
+    }
+
+    @Test
     fun `fully governed modules produce a clean deterministic result`() {
         val first = evaluate("fully-governed.json")
         val second = evaluate("fully-governed.json")
@@ -149,6 +174,12 @@ class MultiModuleGovernanceRegressionTest {
         )
         assertTrue(stderr.toString(Charsets.UTF_8).isBlank())
         return Execution(exitCode, Json.decodeFromString(stdout.toString(Charsets.UTF_8)))
+    }
+
+    private fun useScope(state: String) {
+        val target = repository.resolve(".atlasarc/governance/scope.json")
+        target.parent.createDirectories()
+        Files.copy(fixture.resolve("scope/$state"), target, StandardCopyOption.REPLACE_EXISTING)
     }
 
     private fun compileModule(module: String) {

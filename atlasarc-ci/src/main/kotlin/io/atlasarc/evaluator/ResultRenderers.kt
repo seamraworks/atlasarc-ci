@@ -7,6 +7,7 @@ import io.atlasarc.evaluation.GovernanceEvaluationResult
 import io.atlasarc.evaluation.GovernanceEvaluationVerdict
 import io.atlasarc.evaluation.GovernanceProblemEdge
 import io.atlasarc.governance.CYCLE_GOVERNANCE_RELATIVE_PATH
+import io.atlasarc.scope.REPOSITORY_SCOPE_RELATIVE_PATH
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -42,11 +43,24 @@ object GovernanceEvaluationHumanRenderer {
         appendLine(
             "Problem groups ${result.summary.problemGroupCount}; problem edges ${result.summary.problemEdgeCount}",
         )
+        appendLine(
+            "Repository scope ${if (result.repositoryScope.exists) result.repositoryScope.revision.take(12) else "not configured"}; " +
+                "rules ${result.repositoryScope.summary.ruleCount} " +
+                "(${result.repositoryScope.summary.appliedRuleCount} applied, ${result.repositoryScope.summary.staleRuleCount} stale); " +
+                "excluded ${result.repositoryScope.summary.excludedArchitectureUnitCount} architecture units and " +
+                "${result.repositoryScope.summary.excludedReferenceCount} references",
+        )
+        if (result.repositoryScope.rules.isNotEmpty()) {
+            appendLine("Scope rules:")
+            result.repositoryScope.rules.forEach { rule ->
+                appendLine("- ${rule.ruleId}: ${rule.matchedArchitectureUnitCount} architecture unit(s)")
+            }
+        }
         if (result.issues.isNotEmpty()) {
             appendLine()
             appendLine("Validation issues:")
             result.issues.forEach { issue ->
-                val subject = listOfNotNull(issue.analysisSourceId, issue.recordId).joinToString("/")
+                val subject = listOfNotNull(issue.analysisSourceId, issue.recordId, issue.scopeRuleId).joinToString("/")
                 append("- ${issue.code}")
                 if (subject.isNotBlank()) append(" [$subject]")
                 appendLine(": ${issue.message}")
@@ -109,6 +123,27 @@ object GovernanceEvaluationSarifRenderer {
                         put("governanceEvaluationResultVersion", result.resultVersion)
                         put("governanceSchemaVersion", result.governanceSchemaVersion)
                         put("verdict", result.verdict.name.lowercase())
+                        putJsonObject("repositoryScope") {
+                            put("exists", result.repositoryScope.exists)
+                            put("revision", result.repositoryScope.revision)
+                            putJsonArray("rules") {
+                                result.repositoryScope.rules.forEach { rule ->
+                                    add(buildJsonObject {
+                                        put("ruleId", rule.ruleId)
+                                        put("matchedArchitectureUnitCount", rule.matchedArchitectureUnitCount)
+                                    })
+                                }
+                            }
+                            putJsonObject("summary") {
+                                put("ruleCount", result.repositoryScope.summary.ruleCount)
+                                put("appliedRuleCount", result.repositoryScope.summary.appliedRuleCount)
+                                put("staleRuleCount", result.repositoryScope.summary.staleRuleCount)
+                                put("architectureUnitCountBefore", result.repositoryScope.summary.architectureUnitCountBefore)
+                                put("architectureUnitCountAfter", result.repositoryScope.summary.architectureUnitCountAfter)
+                                put("referenceCountBefore", result.repositoryScope.summary.referenceCountBefore)
+                                put("referenceCountAfter", result.repositoryScope.summary.referenceCountAfter)
+                            }
+                        }
                     }
                 })
             }
@@ -123,12 +158,12 @@ object GovernanceEvaluationSarifRenderer {
         put("ruleId", ruleId)
         put("level", if (issue.severity.name == "ERROR") "error" else "warning")
         putJsonObject("message") { put("text", issue.message) }
-        if (issue.recordId != null) {
+        if (issue.recordId != null || issue.scopeRuleId != null) {
             putJsonArray("locations") {
                 add(buildJsonObject {
                     putJsonObject("physicalLocation") {
                         putJsonObject("artifactLocation") {
-                            put("uri", CYCLE_GOVERNANCE_RELATIVE_PATH)
+                            put("uri", if (issue.scopeRuleId != null) REPOSITORY_SCOPE_RELATIVE_PATH else CYCLE_GOVERNANCE_RELATIVE_PATH)
                         }
                     }
                 })
@@ -137,6 +172,7 @@ object GovernanceEvaluationSarifRenderer {
         putJsonObject("properties") {
             issue.analysisSourceId?.let { put("analysisSourceId", it) }
             issue.recordId?.let { put("recordId", it) }
+            issue.scopeRuleId?.let { put("scopeRuleId", it) }
         }
     }
 

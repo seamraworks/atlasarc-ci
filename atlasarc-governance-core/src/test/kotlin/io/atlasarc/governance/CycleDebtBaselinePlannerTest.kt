@@ -4,6 +4,11 @@ import io.atlasarc.evaluation.GovernanceEvaluationInput
 import io.atlasarc.evaluation.GovernanceEvaluationIssue
 import io.atlasarc.evaluation.GovernanceEvaluationVerdict
 import io.atlasarc.evaluation.CycleGovernanceEvaluator
+import io.atlasarc.scope.RepositoryScopeDocument
+import io.atlasarc.scope.RepositoryScopeEvaluationContext
+import io.atlasarc.scope.RepositoryScopeExclusion
+import io.atlasarc.scope.RepositoryScopeSelector
+import io.atlasarc.scope.RepositoryScopeSelectorKind
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -89,6 +94,42 @@ class CycleDebtBaselinePlannerTest {
         assertTrue(second.addedRecords.isEmpty())
         assertEquals(first.proposedDocument, second.proposedDocument)
         assertEquals(GovernanceEvaluationVerdict.CLEAN, second.startingEvaluation.verdict)
+    }
+
+    @Test
+    fun `applies repository scope before selecting baseline edges and reports its impact`() {
+        val scope = RepositoryScopeEvaluationContext(
+            document = RepositoryScopeDocument(
+                exclusions = mapOf(
+                    "outside-a" to RepositoryScopeExclusion(
+                        selector = RepositoryScopeSelector(
+                            kind = RepositoryScopeSelectorKind.JVM_PACKAGE_PATTERN,
+                            pattern = "a",
+                        ),
+                        reason = "Package A is outside the governed architecture.",
+                    ),
+                ),
+            ),
+            exists = true,
+            revision = "scope-revision",
+        )
+
+        val proposal = assertIs<CycleDebtBaselineResult.Proposed>(
+            planner.propose(
+                document = CycleGovernanceDocument(),
+                inputs = listOf(cycle()),
+                repositoryScope = scope,
+            ),
+        ).proposal
+
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, proposal.startingEvaluation.verdict)
+        assertEquals(0, proposal.problemGroupCount)
+        assertEquals(0, proposal.selectedEdgeCount)
+        assertTrue(proposal.addedRecords.isEmpty())
+        assertEquals("scope-revision", proposal.startingEvaluation.repositoryScope.revision)
+        assertEquals(1, proposal.startingEvaluation.repositoryScope.summary.appliedRuleCount)
+        assertEquals(1, proposal.startingEvaluation.repositoryScope.summary.excludedArchitectureUnitCount)
+        assertEquals(3, proposal.startingEvaluation.repositoryScope.summary.excludedReferenceCount)
     }
 
     @Test

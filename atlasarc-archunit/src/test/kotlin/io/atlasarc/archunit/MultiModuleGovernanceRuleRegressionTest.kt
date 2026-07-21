@@ -51,6 +51,19 @@ class MultiModuleGovernanceRuleRegressionTest {
         assertTrue(complete.failureReport.details.isEmpty())
     }
 
+    @Test
+    fun `module-qualified repository scope leaves the equal package in another module`() {
+        useGovernance("empty.json")
+        useScope("billing-left.json")
+
+        val result = rule().evaluate(classes)
+
+        assertTrue(result.hasViolation())
+        assertEquals(2, result.failureReport.details.size)
+        assertTrue(result.failureReport.details.any { it.contains("orders:acceptance.shared.left") })
+        assertFalse(result.failureReport.details.any { it.contains("billing:acceptance.shared.left") })
+    }
+
     private fun rule() = AtlasArcGovernanceRules.governedCycles()
         .fromRepository(repository)
         .forAnalysisSource("jvm:whole-project")
@@ -66,6 +79,12 @@ class MultiModuleGovernanceRuleRegressionTest {
         val target = repository.resolve(".atlasarc/governance/cycles.json")
         target.parent.createDirectories()
         Files.copy(fixture.resolve("governance/$state"), target, StandardCopyOption.REPLACE_EXISTING)
+    }
+
+    private fun useScope(state: String) {
+        val target = repository.resolve(".atlasarc/governance/scope.json")
+        target.parent.createDirectories()
+        Files.copy(fixture.resolve("scope/$state"), target, StandardCopyOption.REPLACE_EXISTING)
     }
 
     private fun compileModule(module: String): Path {

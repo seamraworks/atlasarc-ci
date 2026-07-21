@@ -15,6 +15,13 @@ import io.atlasarc.governance.GovernanceIdentity
 import io.atlasarc.governance.GovernanceLanguage
 import io.atlasarc.governance.GovernanceOwnerSide
 import io.atlasarc.governance.GovernanceScope
+import io.atlasarc.scope.REPOSITORY_SCOPE_RELATIVE_PATH
+import io.atlasarc.scope.RepositoryScopeCodec
+import io.atlasarc.scope.RepositoryScopeDocument
+import io.atlasarc.scope.RepositoryScopeEncodeResult
+import io.atlasarc.scope.RepositoryScopeExclusion
+import io.atlasarc.scope.RepositoryScopeSelector
+import io.atlasarc.scope.RepositoryScopeSelectorKind
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.BeforeEach
@@ -110,6 +117,84 @@ class EvaluatorApplicationTest {
     }
 
     @Test
+    fun `repository scope removes excluded packages before standalone cycle evaluation`() {
+        writeScope(
+            RepositoryScopeDocument(
+                exclusions = mapOf(
+                    "generated-a" to RepositoryScopeExclusion(
+                        RepositoryScopeSelector(
+                            RepositoryScopeSelectorKind.JVM_PACKAGE_PATTERN,
+                            "a",
+                            module = "main",
+                        ),
+                        "Fixture package is outside the governed architecture.",
+                    ),
+                ),
+            ),
+        )
+
+        val execution = runJson()
+        val result = Json.decodeFromString<GovernanceEvaluationResult>(execution.stdout)
+
+        assertEquals(EvaluatorExitCode.CLEAN, execution.exitCode, execution.stdout + execution.stderr)
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, result.verdict)
+        assertTrue(result.repositoryScope.exists)
+        assertEquals(1, result.repositoryScope.summary.excludedArchitectureUnitCount)
+        assertTrue(result.repositoryScope.summary.excludedReferenceCount > 0)
+        assertEquals(0, result.repositoryScope.summary.referenceCountAfter)
+        assertFalse(execution.stdout.contains("Fixture package is outside"))
+    }
+
+    @Test
+    fun `human and SARIF output disclose repository scope rule identity and impact`() {
+        writeScope(
+            RepositoryScopeDocument(
+                exclusions = mapOf(
+                    "generated-a" to RepositoryScopeExclusion(
+                        RepositoryScopeSelector(
+                            RepositoryScopeSelectorKind.JVM_PACKAGE_PATTERN,
+                            "a",
+                            module = "main",
+                        ),
+                        "Fixture package is outside the governed architecture.",
+                    ),
+                ),
+            ),
+        )
+
+        val human = execute(directArguments("human"))
+        val sarif = execute(directArguments("sarif"))
+        val baseline = execute(
+            arrayOf("baseline", "--config", writeEvaluatorConfig().toString(), "--format", "human"),
+        )
+
+        assertEquals(EvaluatorExitCode.CLEAN, human.exitCode, human.stdout + human.stderr)
+        assertTrue(human.stdout.contains("Scope rules:"))
+        assertTrue(human.stdout.contains("generated-a: 1 architecture unit(s)"))
+        assertEquals(EvaluatorExitCode.CLEAN, sarif.exitCode, sarif.stdout + sarif.stderr)
+        assertTrue(sarif.stdout.contains("\"repositoryScope\""))
+        assertTrue(sarif.stdout.contains("\"ruleId\": \"generated-a\""))
+        assertTrue(sarif.stdout.contains("\"matchedArchitectureUnitCount\": 1"))
+        assertEquals(EvaluatorExitCode.CLEAN, baseline.exitCode, baseline.stdout + baseline.stderr)
+        assertTrue(baseline.stdout.contains("Scope rules:"))
+        assertTrue(baseline.stdout.contains("generated-a: 1 architecture unit(s)"))
+    }
+
+    @Test
+    fun `invalid repository scope fails closed in standalone evaluation`() {
+        val path = root.resolve(REPOSITORY_SCOPE_RELATIVE_PATH)
+        path.parent.createDirectories()
+        Files.writeString(path, "{}")
+
+        val execution = runJson()
+        val result = Json.decodeFromString<GovernanceEvaluationResult>(execution.stdout)
+
+        assertEquals(EvaluatorExitCode.INVALID, execution.exitCode)
+        assertEquals(GovernanceEvaluationVerdict.INVALID, result.verdict)
+        assertTrue(result.issues.any { it.code == "invalid-repository-scope" })
+    }
+
+    @Test
     fun `source newer than classes returns machine-readable invalid result`() {
         val future = FileTime.fromMillis(System.currentTimeMillis() + 10_000)
         Files.setLastModifiedTime(sourceRoot.resolve("a/A.java"), future)
@@ -193,6 +278,8 @@ class EvaluatorApplicationTest {
 
         assertEquals(EvaluatorExitCode.CLEAN, baseline.exitCode, baseline.stdout + baseline.stderr)
         assertTrue(baselineResult.written)
+        assertEquals(3, baselineResult.resultVersion)
+        assertEquals(0, baselineResult.repositoryScope.summary.ruleCount)
         assertEquals(2, baselineResult.summary.ungovernedCycleReferences)
         assertEquals(1, baselineResult.summary.selectedCycleBreakingEdges)
         assertEquals(1, baselineResult.summary.recordsToAdd)
@@ -372,6 +459,13 @@ class EvaluatorApplicationTest {
     private fun writeGovernance(document: CycleGovernanceDocument) {
         val encoded = CycleGovernanceCodec().encode(document) as GovernanceEncodeResult.Success
         val path = root.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH)
+        path.parent.createDirectories()
+        Files.writeString(path, encoded.text)
+    }
+
+    private fun writeScope(document: RepositoryScopeDocument) {
+        val encoded = RepositoryScopeCodec().encode(document) as RepositoryScopeEncodeResult.Success
+        val path = root.resolve(REPOSITORY_SCOPE_RELATIVE_PATH)
         path.parent.createDirectories()
         Files.writeString(path, encoded.text)
     }

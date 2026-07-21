@@ -5,10 +5,13 @@ import io.atlasarc.governance.GovernanceBackend
 import io.atlasarc.governance.GovernanceIssueSeverity
 import io.atlasarc.governance.GovernanceLanguage
 import io.atlasarc.governance.GovernanceRecordStatus
+import io.atlasarc.scope.REPOSITORY_SCOPE_SCHEMA_VERSION
+import io.atlasarc.scope.RepositoryScopeRuleEvaluation
+import io.atlasarc.scope.RepositoryScopeSummary
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-const val GOVERNANCE_EVALUATION_RESULT_VERSION: Int = 2
+const val GOVERNANCE_EVALUATION_RESULT_VERSION: Int = 3
 
 @Serializable
 enum class GovernanceEvaluationVerdict {
@@ -74,6 +77,16 @@ data class GovernanceEvaluationIssue(
     val severity: GovernanceIssueSeverity,
     val analysisSourceId: String? = null,
     val recordId: String? = null,
+    val scopeRuleId: String? = null,
+)
+
+@Serializable
+data class RepositoryScopeEvaluation(
+    val schemaVersion: Int = REPOSITORY_SCOPE_SCHEMA_VERSION,
+    val exists: Boolean = false,
+    val revision: String = "missing",
+    val rules: List<RepositoryScopeRuleEvaluation> = emptyList(),
+    val summary: RepositoryScopeSummary = RepositoryScopeSummary(0, 0, 0, 0, 0, 0, 0),
 )
 
 @Serializable
@@ -100,4 +113,5 @@ data class GovernanceEvaluationResult(
     val problemEdges: List<GovernanceProblemEdge>,
     val issues: List<GovernanceEvaluationIssue>,
     val summary: GovernanceEvaluationSummary,
+    val repositoryScope: RepositoryScopeEvaluation = RepositoryScopeEvaluation(),
 )

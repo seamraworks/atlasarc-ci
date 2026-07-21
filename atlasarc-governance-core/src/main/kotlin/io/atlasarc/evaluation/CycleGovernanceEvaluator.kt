@@ -11,6 +11,9 @@ import io.atlasarc.governance.GovernanceEvidenceSource
 import io.atlasarc.governance.GovernanceIdentity
 import io.atlasarc.governance.GovernanceIssueSeverity
 import io.atlasarc.governance.GovernanceRecordStatus
+import io.atlasarc.governance.GovernanceRecordMatch
+import io.atlasarc.scope.RepositoryScopeEvaluationContext
+import io.atlasarc.scope.RepositoryScopeMatcher
 import java.nio.charset.StandardCharsets
 
 /**
@@ -27,11 +30,13 @@ data class GovernanceEvaluationInput(
 /** Evaluates repository cycle governance over one or more acquired evidence sources. */
 class CycleGovernanceEvaluator(
     private val matcher: CycleGovernanceMatcher = CycleGovernanceMatcher(),
+    private val scopeMatcher: RepositoryScopeMatcher = RepositoryScopeMatcher(),
 ) {
     fun evaluate(
         document: CycleGovernanceDocument,
         inputs: List<GovernanceEvaluationInput>,
         evaluatorVersion: String,
+        repositoryScope: RepositoryScopeEvaluationContext = RepositoryScopeEvaluationContext(),
     ): GovernanceEvaluationResult {
         val issues = inputs.flatMapTo(mutableListOf()) { it.issues }
         if (inputs.isEmpty()) {
@@ -84,7 +89,39 @@ class CycleGovernanceEvaluator(
             caseSensitive = casePolicies.firstOrNull() ?: true,
             evaluationComplete = snapshots.all(GovernanceEvidenceSnapshot::evaluationComplete),
         )
-        val matchResult = matcher.match(document, combined)
+        val scopeApplication = scopeMatcher.apply(repositoryScope.document, combined)
+        scopeApplication.issues.forEach { issue ->
+            issues += GovernanceEvaluationIssue(
+                code = issue.code,
+                message = issue.message,
+                severity = issue.severity,
+                scopeRuleId = issue.ruleId,
+            )
+        }
+        val scopedEvidence = scopeApplication.evidence
+        val rawMatchResult = matcher.match(document, scopedEvidence)
+        val scopedOutRecordIds = document.records.filterValues { record ->
+            scopeMatcher.matchesAny(
+                repositoryScope.document,
+                record.analysisSource.backend,
+                record.source,
+                combined.caseSensitive,
+            ) || scopeMatcher.matchesAny(
+                repositoryScope.document,
+                record.analysisSource.backend,
+                record.target,
+                combined.caseSensitive,
+            )
+        }.keys
+        val matchResult = rawMatchResult.copy(
+            records = rawMatchResult.records.mapValues { (recordId, match) ->
+                if (recordId !in scopedOutRecordIds) match else GovernanceRecordMatch(
+                    recordId = recordId,
+                    status = GovernanceRecordStatus.NOT_IN_ANALYSIS,
+                    diagnostics = listOf("This governance record is outside the repository analysis-scope policy."),
+                )
+            },
+        )
         val records = matchResult.records.toSortedMap().map { (recordId, match) ->
             val record = document.records.getValue(recordId)
             GovernanceRecordEvaluation(
@@ -119,7 +156,7 @@ class CycleGovernanceEvaluator(
         val groups = mutableListOf<GovernanceProblemGroup>()
         val edges = mutableListOf<GovernanceProblemEdge>()
         combined.sources.sortedWith(compareBy({ it.id }, { it.backend.name })).forEach { source ->
-            val sourceReferences = combined.references.filter {
+            val sourceReferences = scopedEvidence.references.filter {
                 it.analysisSourceId == source.id && it.backend == source.backend
             }
             val structuralEdges = sourceReferences.groupBy { reference ->
@@ -171,6 +208,7 @@ class CycleGovernanceEvaluator(
             compareBy(
                 { it.analysisSourceId.orEmpty() },
                 { it.recordId.orEmpty() },
+                { it.scopeRuleId.orEmpty() },
                 GovernanceEvaluationIssue::code,
                 GovernanceEvaluationIssue::message,
             ),
@@ -204,6 +242,13 @@ class CycleGovernanceEvaluator(
                 invalidRecordCount = records.count { it.status in invalidStatuses },
                 problemGroupCount = orderedGroups.size,
                 problemEdgeCount = orderedEdges.size,
+            ),
+            repositoryScope = RepositoryScopeEvaluation(
+                schemaVersion = repositoryScope.document.schemaVersion,
+                exists = repositoryScope.exists,
+                revision = repositoryScope.revision,
+                rules = scopeApplication.rules,
+                summary = scopeApplication.summary,
             ),
         )
     }

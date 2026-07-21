@@ -2,6 +2,7 @@ package io.atlasarc.governance
 
 import java.nio.file.Path
 import java.text.Normalizer
+import io.atlasarc.scope.REPOSITORY_SCOPE_RELATIVE_PATH
 
 object GovernancePaths {
     private val windowsAbsolute = Regex("^[A-Za-z]:[/\\\\].*")
@@ -23,5 +24,9 @@ object GovernancePaths {
 
     fun documentPath(repositoryRoot: Path): Path =
         repositoryRoot.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH.replace('/', repositoryRoot.fileSystem.separator.single()))
+            .normalize()
+
+    fun scopeDocumentPath(repositoryRoot: Path): Path =
+        repositoryRoot.resolve(REPOSITORY_SCOPE_RELATIVE_PATH.replace('/', repositoryRoot.fileSystem.separator.single()))
             .normalize()
 }

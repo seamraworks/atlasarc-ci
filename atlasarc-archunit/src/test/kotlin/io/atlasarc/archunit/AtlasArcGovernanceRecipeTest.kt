@@ -14,6 +14,13 @@ import io.atlasarc.governance.GovernanceLanguage
 import io.atlasarc.governance.GovernanceOwnerSide
 import io.atlasarc.governance.GovernancePaths
 import io.atlasarc.governance.GovernanceScope
+import io.atlasarc.scope.RepositoryScopeCodec
+import io.atlasarc.scope.RepositoryScopeDocument
+import io.atlasarc.scope.RepositoryScopeEncodeResult
+import io.atlasarc.scope.RepositoryScopeExclusion
+import io.atlasarc.scope.RepositoryScopeSelector
+import io.atlasarc.scope.RepositoryScopeSelectorKind
+import io.atlasarc.scope.REPOSITORY_SCOPE_RELATIVE_PATH
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -29,6 +36,7 @@ class AtlasArcGovernanceRecipeTest {
 
     private val governedClasses = ClassFileImporter().importPackages(GOVERNED)
     private val allRecipeClasses = ClassFileImporter().importPackages(FIXTURES)
+    private val allJavaRecipeClasses = ClassFileImporter().importPackages("$FIXTURES.governed", "$FIXTURES.ungoverned")
 
     @Test
     fun `a plain ArchUnit rule detects the deliberate fixture cycle`() {
@@ -56,6 +64,42 @@ class AtlasArcGovernanceRecipeTest {
             recipeRule(repository).evaluate(allRecipeClasses).hasViolation(),
             "an ungoverned cycle must still fail; the repository-backed rule must not fail open",
         )
+    }
+
+    @Test
+    fun `the recipe applies the same repository scope policy as standalone CI`() {
+        val repository = repositoryWithGovernance()
+        val scope = RepositoryScopeDocument(
+            exclusions = mapOf(
+                "ungoverned-catalog-fixture" to RepositoryScopeExclusion(
+                    RepositoryScopeSelector(
+                        RepositoryScopeSelectorKind.JVM_PACKAGE_PATTERN,
+                        "$FIXTURES.ungoverned.catalog.**",
+                        module = "test",
+                    ),
+                    "Fixture package is outside the governed architecture.",
+                ),
+            ),
+        )
+        val encoded = RepositoryScopeCodec().encode(scope) as RepositoryScopeEncodeResult.Success
+        val path = repository.resolve(REPOSITORY_SCOPE_RELATIVE_PATH)
+        Files.createDirectories(path.parent)
+        Files.writeString(path, encoded.text)
+
+        assertDoesNotThrow { recipeRule(repository).check(allJavaRecipeClasses) }
+    }
+
+    @Test
+    fun `the recipe fails closed when repository scope is invalid`() {
+        val repository = repositoryWithGovernance()
+        val path = repository.resolve(REPOSITORY_SCOPE_RELATIVE_PATH)
+        Files.createDirectories(path.parent)
+        Files.writeString(path, "{}")
+
+        val result = recipeRule(repository).evaluate(governedClasses)
+
+        assertTrue(result.hasViolation())
+        assertTrue(result.failureReport.details.any { it.contains("repository scope is invalid") })
     }
 
     @Test

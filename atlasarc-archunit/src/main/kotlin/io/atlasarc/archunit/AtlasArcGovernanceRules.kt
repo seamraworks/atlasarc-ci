@@ -10,6 +10,9 @@ import io.atlasarc.evaluation.CycleGovernanceEvaluator
 import io.atlasarc.evaluation.GovernanceEvaluationVerdict
 import io.atlasarc.governance.CycleGovernanceRepository
 import io.atlasarc.governance.GovernanceReadResult
+import io.atlasarc.scope.RepositoryScopeEvaluationContext
+import io.atlasarc.scope.RepositoryScopeReadResult
+import io.atlasarc.scope.RepositoryScopeRepository
 import java.nio.file.Path
 
 /** Java-friendly entry point for AtlasArc.io's repository-backed ArchUnit rule. */
@@ -112,6 +115,25 @@ private class AtlasArcGovernedCyclesRule(
             )
         }
         val repositoryRoot = loaded.repositoryRoot
+        val repositoryScope = when (val read = RepositoryScopeRepository().read(repositoryRoot)) {
+            is RepositoryScopeReadResult.Loaded -> RepositoryScopeEvaluationContext(
+                document = read.value.document,
+                exists = read.value.exists,
+                revision = read.value.revision.value,
+            )
+            is RepositoryScopeReadResult.Invalid -> return failure(
+                classes,
+                "AtlasArc.io repository scope is invalid: " + read.issues.joinToString("; ") { it.message },
+            )
+            is RepositoryScopeReadResult.MissingVcsRoot -> return failure(
+                classes,
+                "AtlasArc.io could not find the Git repository that owns .atlasarc/governance/scope.json.",
+            )
+            is RepositoryScopeReadResult.IoError -> return failure(
+                classes,
+                "AtlasArc.io could not read repository scope: ${read.message}",
+            )
+        }
         val result = try {
             val input = ArchUnitGovernanceEvidence().build(
                 classes = classes,
@@ -134,6 +156,7 @@ private class AtlasArcGovernedCyclesRule(
                 document = loaded.document,
                 inputs = listOf(input),
                 evaluatorVersion = "atlasarc-archunit/${implementationVersion()}",
+                repositoryScope = repositoryScope,
             )
         } catch (exception: Exception) {
             return failure(

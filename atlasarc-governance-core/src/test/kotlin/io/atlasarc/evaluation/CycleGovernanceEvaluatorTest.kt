@@ -14,6 +14,12 @@ import io.atlasarc.governance.GovernanceIssueSeverity
 import io.atlasarc.governance.GovernanceLanguage
 import io.atlasarc.governance.GovernanceOwnerSide
 import io.atlasarc.governance.GovernanceScope
+import io.atlasarc.governance.GovernanceRecordStatus
+import io.atlasarc.scope.RepositoryScopeDocument
+import io.atlasarc.scope.RepositoryScopeEvaluationContext
+import io.atlasarc.scope.RepositoryScopeExclusion
+import io.atlasarc.scope.RepositoryScopeSelector
+import io.atlasarc.scope.RepositoryScopeSelectorKind
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -103,6 +109,51 @@ class CycleGovernanceEvaluatorTest {
         assertEquals(setOf("billing"), result.problemGroups.flatMap { it.members }.mapNotNullTo(sortedSetOf()) { it.module })
     }
 
+    @Test
+    fun `repository scope removes units and incident dependencies before cycle evaluation`() {
+        val result = CycleGovernanceEvaluator().evaluate(
+            document = CycleGovernanceDocument(),
+            inputs = listOf(cycle()),
+            evaluatorVersion = "test",
+            repositoryScope = scope("outside-a", "a"),
+        )
+
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, result.verdict)
+        assertTrue(result.problemGroups.isEmpty())
+        assertEquals(1, result.repositoryScope.summary.excludedArchitectureUnitCount)
+        assertEquals(2, result.repositoryScope.summary.excludedReferenceCount)
+        assertEquals("scope-revision", result.repositoryScope.revision)
+    }
+
+    @Test
+    fun `cycle decisions for excluded units are neutral rather than invalid`() {
+        val result = CycleGovernanceEvaluator().evaluate(
+            document = CycleGovernanceDocument(records = mapOf("accept-a-to-b" to packageRecord("a", "b"))),
+            inputs = listOf(cycle()),
+            evaluatorVersion = "test",
+            repositoryScope = scope("outside-a", "a"),
+        )
+
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, result.verdict)
+        assertEquals(GovernanceRecordStatus.NOT_IN_ANALYSIS, result.records.single().status)
+        assertTrue(result.records.single().diagnostics.single().contains("analysis-scope policy"))
+    }
+
+    @Test
+    fun `stale scope rules remain visible warnings without invalidating a clean result`() {
+        val input = cycle().copy(evidence = cycle().evidence.copy(references = emptyList()))
+        val result = CycleGovernanceEvaluator().evaluate(
+            document = CycleGovernanceDocument(),
+            inputs = listOf(input),
+            evaluatorVersion = "test",
+            repositoryScope = scope("old-package", "removed"),
+        )
+
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, result.verdict)
+        assertTrue(result.issues.any { it.code == "stale-scope-rule" && it.scopeRuleId == "old-package" })
+        assertEquals(1, result.repositoryScope.summary.staleRuleCount)
+    }
+
     private fun evaluate(document: CycleGovernanceDocument, input: GovernanceEvaluationInput) =
         CycleGovernanceEvaluator().evaluate(document, listOf(input), "test")
 
@@ -149,6 +200,19 @@ class CycleGovernanceEvaluatorTest {
         target = GovernanceIdentity(to, module = module),
         kind = CycleGovernanceKind.INTENTIONAL,
         reason = "Reviewed boundary.",
+    )
+
+    private fun scope(ruleId: String, pattern: String) = RepositoryScopeEvaluationContext(
+        document = RepositoryScopeDocument(
+            exclusions = mapOf(
+                ruleId to RepositoryScopeExclusion(
+                    RepositoryScopeSelector(RepositoryScopeSelectorKind.JVM_PACKAGE_PATTERN, pattern),
+                    "Outside the governed architecture.",
+                ),
+            ),
+        ),
+        exists = true,
+        revision = "scope-revision",
     )
 
     private companion object {

@@ -6,32 +6,40 @@ Most cycle detectors answer a binary question: does a cycle exist? Real reposito
 useful one: is this a new architecture problem, an intentional dependency, or debt the team has
 chosen to carry for now?
 
-A build that fails forever on every known cycle is soon ignored or disabled. A broad exclusion can
-hide the next regression. AtlasArc.io CI takes a narrower approach: it compares fresh dependency
-evidence with explicit decisions committed in `.atlasarc/governance/cycles.json`. Known decisions
-remain visible and reviewable; a new or incompletely accepted cycle fails the build.
+A build that fails forever on every known cycle is soon ignored or disabled. An undisclosed
+exclusion can hide the next regression. AtlasArc.io CI takes a narrower approach: it first applies
+the repository's explicit architecture scope and then compares fresh dependency evidence with
+decisions committed in `.atlasarc/governance/cycles.json`. Known decisions remain visible and
+reviewable; a new or incompletely accepted cycle fails the build.
 
 AtlasArc.io CI is open source under Apache License 2.0. It supports Java, Kotlin, and TypeScript and
 can run without IntelliJ or a paid plugin license. [AtlasArc.io for IntelliJ](https://atlasarc.io)
 is the optional visual workbench for finding cycles and authoring or repairing decisions; this
 repository provides the independent engine and build integrations that enforce those decisions.
 
+> Repository-scope support documented below is implemented on `main` for the next minor release.
+> Maven Central `1.2.0` remains the current published release and contains cycle decisions and
+> cycle-debt baseline generation, but not `scope.json` yet.
+
 ## The workflow
 
-AtlasArc.io CI combines two repository-owned inputs:
+AtlasArc.io CI combines three repository-owned inputs:
 
 1. **Current evidence** describes the dependencies that exist now. JVM evidence comes from compiled
    classes and matching source roots; TypeScript evidence comes from dependency-cruiser JSON.
-2. **Governance decisions** describe cycle-forming dependencies the team has accepted as
+2. **Repository scope** describes generated, vendored, or deliberately fenced architecture units
+   outside the governed evidence universe, in `.atlasarc/governance/scope.json`.
+3. **Governance decisions** describe cycle-forming dependencies the team has accepted as
    `INTENTIONAL` architecture or acknowledged `DEBT`.
 
-The evaluator validates both inputs, applies only decisions that still match the evidence, and then
-checks the remaining problem graph for cycles.
+The evaluator validates all three inputs, removes scoped-out evidence, applies only decisions that
+still match the retained dependencies, and then checks the remaining problem graph for cycles.
 
 ```mermaid
 flowchart LR
     build["Build output<br/>JVM classes or TypeScript graph"] --> evidence["Fresh dependency evidence"]
-    policy["Committed decisions<br/>.atlasarc/governance/cycles.json"] --> evaluator["AtlasArc.io CI"]
+    scope["Repository scope<br/>.atlasarc/governance/scope.json"] --> evaluator["AtlasArc.io CI"]
+    policy["Cycle decisions<br/>.atlasarc/governance/cycles.json"] --> evaluator
     evidence --> evaluator
     evaluator --> clean["Exit 0<br/>No unaccepted cycle"]
     evaluator --> cycles["Exit 1<br/>Unaccepted cycle"]
@@ -42,10 +50,10 @@ The process is deliberately evidence-first. AtlasArc.io CI does not invoke Maven
 dependency-cruiser: your existing build produces the evidence, then the evaluator checks it. This
 keeps the gate predictable and lets each repository retain control of its toolchain.
 
-## One governance file, two enforcement paths
+## One contract, two enforcement paths
 
-Most teams need one of these integrations. Both use the same schema, matcher, module identity,
-coverage rules, and cycle calculation.
+Most teams need one of these integrations. Both use the same schemas, scope policy, matcher,
+module identity, coverage rules, and cycle calculation.
 
 | | Standalone evaluator | ArchUnit/JUnit adapter |
 |---|---|---|
@@ -62,6 +70,8 @@ contract and evaluator. It is not a separate end-user workflow.
 
 - [Configure the evaluator](docs/evaluator-configuration.md) explains `evaluator.json`, JVM and
   TypeScript evidence, module identity, path resolution, freshness, output, and troubleshooting.
+- [Define repository analysis scope](docs/repository-scope.md) explains `scope.json`, portable
+  JVM/TypeScript selectors, module semantics, fail-closed behavior, and audit output.
 - [Govern cycle decisions](docs/governance-decisions.md) explains `cycles.json`, the decision
   workflow, scopes, ownership, Intentional/Debt semantics, record health, and review practices.
 - [Establish a cycle-debt baseline](docs/cycle-debt-baseline.md) explains how to adopt the gate in a
@@ -102,7 +112,8 @@ mvn verify -Ppublish-cli
 The executable and ZIP are created under `atlasarc-ci/target/`.
 
 To try a JVM project, first create `.atlasarc/governance/cycles.json` in that project's Git root.
-An empty decision set is valid and treats every detected cycle as unaccepted:
+Repository scope is optional; a missing `scope.json` means the complete acquired architecture is in
+scope. An empty decision set is valid and treats every detected in-scope cycle as unaccepted:
 
 ```json
 {
@@ -161,7 +172,8 @@ read-only gate. See the
 
 `repositoryRoot` is resolved relative to the evaluator configuration file and may point anywhere
 inside the owning Git repository. AtlasArc.io locates that repository and reads
-`.atlasarc/governance/cycles.json` from its root. Evidence paths are repository-relative.
+`.atlasarc/governance/scope.json` and `.atlasarc/governance/cycles.json` from its root. Evidence
+paths are repository-relative.
 
 ### Multi-module JVM projects
 
@@ -342,6 +354,7 @@ the build green.
 The bundled schemas are authoritative:
 
 - [`cycle-governance-v1.schema.json`](atlasarc-governance-core/src/main/resources/io/atlasarc/governance/cycle-governance-v1.schema.json)
+- [`repository-scope-v1.schema.json`](atlasarc-governance-core/src/main/resources/io/atlasarc/scope/repository-scope-v1.schema.json)
 - [`evaluator-config.schema.json`](atlasarc-ci/src/main/resources/evaluator-config.schema.json)
 
 ## Project modules
@@ -350,7 +363,7 @@ All artifacts use the `io.atlasarc` group, share one version, and are released t
 
 | Artifact | Responsibility |
 |---|---|
-| `atlasarc-governance-core` | Portable schemas, evidence contract, validation, matching, coverage, and deterministic cycle verdict. |
+| `atlasarc-governance-core` | Portable schemas, repository scope, evidence contract, validation, matching, coverage, and deterministic cycle verdict. |
 | `atlasarc-archunit` | JVM evidence acquisition and the Java-friendly ArchUnit/JUnit rule. |
 | `atlasarc-ci` | Standalone configuration, JVM/TypeScript acquisition, renderers, exit codes, and executable distribution. |
 
@@ -360,8 +373,12 @@ Adapters can depend only on the portable engine:
 implementation("io.atlasarc:atlasarc-governance-core:1.2.0")
 ```
 
+That coordinate is the current cycle-governance release. Substitute the next minor version after
+it is published when using the repository-scope APIs described below.
+
 Create a `GovernanceEvidenceSnapshot`, wrap it in `GovernanceEvaluationInput`, and call
-`CycleGovernanceEvaluator.evaluate`. Tools that provide an explicit baseline workflow can call
+`CycleGovernanceEvaluator.evaluate`; pass `RepositoryScopeEvaluationContext` when the repository
+uses scope policy. Tools that provide an explicit baseline workflow can call
 `CycleDebtBaselinePlanner.propose` to obtain a pure proposal and diagnostics before owning consent
 and a revision-checked write. The core has no IntelliJ, ArchUnit, Node, or build-tool dependency.
 Evidence adapters own acquisition; the core owns validation, matching, coverage, cycle calculation,

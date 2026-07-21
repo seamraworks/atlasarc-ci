@@ -4,13 +4,14 @@ package io.atlasarc.evaluator
 
 import io.atlasarc.governance.CycleDebtBaselineDiagnostic
 import io.atlasarc.governance.CycleDebtBaselineProposal
+import io.atlasarc.evaluation.RepositoryScopeEvaluation
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
 data class CycleDebtBaselineCommandResult(
-    val resultVersion: Int = 2,
+    val resultVersion: Int = 3,
     val producer: String = "AtlasArc.io CI",
     val producerVersion: String,
     val safe: Boolean,
@@ -21,6 +22,7 @@ data class CycleDebtBaselineCommandResult(
     val startingVerdict: String,
     val resultingVerdict: String,
     val summary: CycleDebtBaselineCommandSummary,
+    val repositoryScope: RepositoryScopeEvaluation = RepositoryScopeEvaluation(),
     val records: List<CycleDebtBaselineRecordPreview>,
     val diagnostics: List<CycleDebtBaselineCommandDiagnostic>,
 )
@@ -84,6 +86,7 @@ object CycleDebtBaselineOutput {
             existingRecordsUntouched = proposal.untouchedRecordCount,
             recordsToAdd = proposal.addedRecords.size,
         ),
+        repositoryScope = proposal.startingEvaluation.repositoryScope,
         records = proposal.addedRecords.map { (recordId, record) ->
             CycleDebtBaselineRecordPreview(
                 recordId = recordId,
@@ -137,6 +140,17 @@ object CycleDebtBaselineOutput {
             return@buildString
         }
         appendLine("Current problem cycle groups: ${result.summary.problemGroups}")
+        appendLine(
+            "Repository scope: ${if (result.repositoryScope.exists) result.repositoryScope.revision.take(12) else "not configured"}; " +
+                "${result.repositoryScope.summary.appliedRuleCount}/${result.repositoryScope.summary.ruleCount} rules applied; " +
+                "${result.repositoryScope.summary.excludedArchitectureUnitCount} architecture units excluded",
+        )
+        if (result.repositoryScope.rules.isNotEmpty()) {
+            appendLine("Scope rules:")
+            result.repositoryScope.rules.forEach { rule ->
+                appendLine("- ${rule.ruleId}: ${rule.matchedArchitectureUnitCount} architecture unit(s)")
+            }
+        }
         appendLine("Ungoverned cycle references: ${result.summary.ungovernedCycleReferences}")
         appendLine("Selected cycle-breaking edges: ${result.summary.selectedCycleBreakingEdges}")
         appendLine("Already governed references in those groups: ${result.summary.alreadyGovernedReferences}")

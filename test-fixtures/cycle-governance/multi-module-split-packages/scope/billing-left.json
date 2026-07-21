@@ -1,0 +1,14 @@
+{
+  "$schema": "https://atlasarc.io/schemas/repository-scope-v1.schema.json",
+  "schemaVersion": 1,
+  "exclusions": {
+    "billing-left": {
+      "selector": {
+        "kind": "jvm-package-pattern",
+        "pattern": "acceptance.shared.left",
+        "module": "billing"
+      },
+      "reason": "Regression fixture: exclude only the billing-owned split package."
+    }
+  }
+}

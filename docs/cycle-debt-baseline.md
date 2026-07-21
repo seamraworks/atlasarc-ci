@@ -18,6 +18,10 @@ Create a complete `.atlasarc/evaluator.json` for the repository and produce all 
 evidence. JVM classes must be newer than their Java/Kotlin sources; dependency-cruiser JSON must be
 newer than the TypeScript files it represents. Multi-module JVM roots need stable module labels.
 
+If the repository uses `.atlasarc/governance/scope.json`, review that policy first. Baseline
+planning applies repository scope before selecting cycle-breaking edges and never creates Debt for
+excluded architecture units.
+
 The governance path must belong to a Git worktree, be writable, and be included by effective Git
 ignore rules. AtlasArc refuses to create a baseline when it cannot prove these conditions.
 

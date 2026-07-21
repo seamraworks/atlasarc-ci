@@ -19,6 +19,10 @@ import io.atlasarc.governance.GovernanceValidationIssue
 import io.atlasarc.governance.VcsRootLocator
 import io.atlasarc.governance.GovernanceWriteCheckResult
 import io.atlasarc.governance.GovernanceWriteResult
+import io.atlasarc.scope.LoadedRepositoryScope
+import io.atlasarc.scope.RepositoryScopeEvaluationContext
+import io.atlasarc.scope.RepositoryScopeReadResult
+import io.atlasarc.scope.RepositoryScopeRepository
 import java.io.PrintStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -39,6 +43,7 @@ class EvaluatorApplication(
     private val acquirer: EvidenceAcquirer = HeadlessEvidenceAcquirer(),
     private val evaluator: CycleGovernanceEvaluator = CycleGovernanceEvaluator(),
     private val repository: CycleGovernanceRepository = CycleGovernanceRepository(),
+    private val scopeRepository: RepositoryScopeRepository = RepositoryScopeRepository(),
     private val baselinePlanner: CycleDebtBaselinePlanner = CycleDebtBaselinePlanner(),
 ) {
     fun run(arguments: Array<String>, currentDirectory: Path = Path.of(".")): Int {
@@ -79,6 +84,25 @@ class EvaluatorApplication(
                 "missing-vcs-root",
                 "No owning Git repository was found for the configured repository root.",
             )
+
+        val repositoryScope = when (val read = scopeRepository.read(repositoryRoot)) {
+            is RepositoryScopeReadResult.Loaded -> read.value
+            is RepositoryScopeReadResult.Invalid -> return emitFailure(
+                invocation,
+                "invalid-repository-scope",
+                read.issues.joinToString("; ") { "${it.code}: ${it.message}" },
+            )
+            is RepositoryScopeReadResult.MissingVcsRoot -> return emitFailure(
+                invocation,
+                "missing-vcs-root",
+                "No owning Git repository was found for the repository scope policy.",
+            )
+            is RepositoryScopeReadResult.IoError -> return emitFailure(
+                invocation,
+                "repository-scope-read-failed",
+                "The repository scope policy could not be read.",
+            )
+        }
 
         val governanceRead = repository.read(repositoryRoot)
         val documentIssues: List<GovernanceValidationIssue>
@@ -124,7 +148,12 @@ class EvaluatorApplication(
         }
 
         val result = try {
-            evaluator.evaluate(document, inputSources, ATLASARC_EVALUATOR_VERSION)
+            evaluator.evaluate(
+                document,
+                inputSources,
+                ATLASARC_EVALUATOR_VERSION,
+                repositoryScope.toEvaluationContext(),
+            )
         } catch (exception: Exception) {
             err.println("AtlasArc.io evaluator internal error while evaluating governance.")
             return EvaluatorExitCode.INTERNAL_ERROR
@@ -177,6 +206,27 @@ class EvaluatorApplication(
                 "missing-vcs-root",
                 "No owning Git repository was found for the configured repository root.",
             )
+        val repositoryScope = when (val read = scopeRepository.read(repositoryRoot)) {
+            is RepositoryScopeReadResult.Loaded -> read.value
+            is RepositoryScopeReadResult.Invalid -> return emitBaselineFailure(
+                evaluatorInvocation,
+                invocation.write,
+                "invalid-repository-scope",
+                read.issues.joinToString("; ") { "${it.code}: ${it.message}" },
+            )
+            is RepositoryScopeReadResult.MissingVcsRoot -> return emitBaselineFailure(
+                evaluatorInvocation,
+                invocation.write,
+                "missing-vcs-root",
+                "No owning Git repository was found for the repository scope policy.",
+            )
+            is RepositoryScopeReadResult.IoError -> return emitBaselineFailure(
+                evaluatorInvocation,
+                invocation.write,
+                "repository-scope-read-failed",
+                "The repository scope policy could not be read.",
+            )
+        }
         val loaded = when (val read = repository.read(repositoryRoot)) {
             is GovernanceReadResult.Loaded -> read.value
             is GovernanceReadResult.Invalid -> return emitBaselineFailure(
@@ -250,6 +300,7 @@ class EvaluatorApplication(
                     ticket = invocation.ticket,
                 ),
                 ATLASARC_EVALUATOR_VERSION,
+                repositoryScope.toEvaluationContext(),
             )
         } catch (exception: Exception) {
             err.println("AtlasArc.io evaluator internal error while planning the cycle-debt baseline.")
@@ -383,6 +434,12 @@ class EvaluatorApplication(
         return (if (path.isAbsolute) path else base.resolve(path)).toAbsolutePath().normalize()
     }
 
+    private fun LoadedRepositoryScope.toEvaluationContext() = RepositoryScopeEvaluationContext(
+        document = document,
+        exists = exists,
+        revision = revision.value,
+    )
+
     private fun helpText(): String = """
         AtlasArc.io Governance Evaluator $ATLASARC_EVALUATOR_VERSION
 
@@ -401,7 +458,7 @@ class EvaluatorApplication(
           java -jar atlasarc-ci.jar baseline --config <file> [--format human|json] [--output <file>]
             [--reason <text>] [--ticket <id>] [--write]
 
-        The evaluator reads .atlasarc/governance/cycles.json from the nearest owning Git root.
+        The evaluator reads .atlasarc/governance/scope.json and cycles.json from the nearest owning Git root.
         It never invokes build tools or Node tooling. Machine output never includes governance
         reasons/tickets or absolute workstation paths.
 
