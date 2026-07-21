@@ -6,7 +6,7 @@
 
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-ci-parent</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <packaging>pom</packaging>
 
   <name>AtlasArc.io CI</name>
@@ -62,7 +62,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <project.build.outputTimestamp>2026-07-21T05:46:22Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-07-21T06:57:19Z</project.build.outputTimestamp>
     <maven.compiler.release>21</maven.compiler.release>
     <kotlin.version>2.2.0</kotlin.version>
     <kotlinx.serialization.version>1.7.3</kotlinx.serialization.version>
