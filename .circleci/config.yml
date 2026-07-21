@@ -14,11 +14,13 @@ jobs:
     steps:
       # Seamra Works disables GitHub deploy keys. This public-source checkout avoids granting a
       # user key while still pinning the workspace to the exact commit that triggered the pipeline.
+      # Keep the triggering branch attached: release jobs commit the new version and push it.
       - run:
           name: Check out public source
           command: |
             git clone --filter=blob:none https://github.com/seamraworks/atlasarc-ci.git .
-            git checkout "$CIRCLE_SHA1"
+            git checkout -B "$CIRCLE_BRANCH" "$CIRCLE_SHA1"
+            test "$(git symbolic-ref --short HEAD)" = "$CIRCLE_BRANCH"
             git remote set-url origin git@github.com:seamraworks/atlasarc-ci.git
       - restore_cache:
           key: atlasarc-ci-maven-{{ checksum "pom.xml" }}
