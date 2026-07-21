@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class CycleDebtBaselineCommandResult(
-    val resultVersion: Int = 1,
+    val resultVersion: Int = 2,
     val producer: String = "AtlasArc.io CI",
     val producerVersion: String,
     val safe: Boolean,
@@ -29,6 +29,7 @@ data class CycleDebtBaselineCommandResult(
 data class CycleDebtBaselineCommandSummary(
     val problemGroups: Int = 0,
     val ungovernedCycleReferences: Int = 0,
+    val selectedCycleBreakingEdges: Int = 0,
     val alreadyGovernedReferences: Int = 0,
     val existingRecordsUntouched: Int = 0,
     val recordsToAdd: Int = 0,
@@ -78,6 +79,7 @@ object CycleDebtBaselineOutput {
         summary = CycleDebtBaselineCommandSummary(
             problemGroups = proposal.problemGroupCount,
             ungovernedCycleReferences = proposal.problemReferenceCount,
+            selectedCycleBreakingEdges = proposal.selectedEdgeCount,
             alreadyGovernedReferences = proposal.alreadyGovernedReferenceCount,
             existingRecordsUntouched = proposal.untouchedRecordCount,
             recordsToAdd = proposal.addedRecords.size,
@@ -136,6 +138,7 @@ object CycleDebtBaselineOutput {
         }
         appendLine("Current problem cycle groups: ${result.summary.problemGroups}")
         appendLine("Ungoverned cycle references: ${result.summary.ungovernedCycleReferences}")
+        appendLine("Selected cycle-breaking edges: ${result.summary.selectedCycleBreakingEdges}")
         appendLine("Already governed references in those groups: ${result.summary.alreadyGovernedReferences}")
         appendLine("Existing governance records left unchanged: ${result.summary.existingRecordsUntouched}")
         appendLine("Exact DEBT records to add: ${result.summary.recordsToAdd}")

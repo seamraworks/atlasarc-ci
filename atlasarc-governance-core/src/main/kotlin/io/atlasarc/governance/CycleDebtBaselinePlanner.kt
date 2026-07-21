@@ -29,6 +29,7 @@ data class CycleDebtBaselineProposal(
     val resultingEvaluation: GovernanceEvaluationResult,
     val problemGroupCount: Int,
     val problemReferenceCount: Int,
+    val selectedEdgeCount: Int,
     val alreadyGovernedReferenceCount: Int,
     val untouchedRecordCount: Int,
 )
@@ -48,13 +49,19 @@ class CycleDebtBaselinePlanner private constructor(
     private val evaluator: CycleGovernanceEvaluator,
     private val codec: CycleGovernanceCodec,
     private val maxRecords: Int,
+    private val feedbackEdgeSelector: CycleDebtFeedbackEdgeSelector,
 ) {
     constructor(
         evaluator: CycleGovernanceEvaluator = CycleGovernanceEvaluator(),
         codec: CycleGovernanceCodec = CycleGovernanceCodec(),
-    ) : this(evaluator, codec, MAX_CYCLE_GOVERNANCE_RECORDS)
+    ) : this(evaluator, codec, MAX_CYCLE_GOVERNANCE_RECORDS, CycleDebtFeedbackEdgeSelector())
 
-    internal constructor(maxRecords: Int) : this(CycleGovernanceEvaluator(), CycleGovernanceCodec(), maxRecords)
+    internal constructor(maxRecords: Int) : this(
+        CycleGovernanceEvaluator(),
+        CycleGovernanceCodec(),
+        maxRecords,
+        CycleDebtFeedbackEdgeSelector(),
+    )
 
     fun propose(
         document: CycleGovernanceDocument,
@@ -90,14 +97,17 @@ class CycleDebtBaselinePlanner private constructor(
 
         val problemReferenceIds = starting.problemEdges
             .flatMapTo(sortedSetOf()) { it.uncoveredReferenceIds }
+        val selectedEdges = feedbackEdgeSelector.select(starting.problemEdges)
+        val selectedReferenceIds = selectedEdges
+            .flatMapTo(sortedSetOf()) { it.uncoveredReferenceIds }
         val alreadyGovernedReferenceIds = starting.problemEdges
             .flatMapTo(sortedSetOf()) { it.governedReferenceIds }
-        if (document.records.size + problemReferenceIds.size > maxRecords) {
+        if (document.records.size + selectedReferenceIds.size > maxRecords) {
             return CycleDebtBaselineResult.Refused(
                 listOf(
                     CycleDebtBaselineDiagnostic(
                         "baseline-record-limit-exceeded",
-                        "The exact debt baseline would contain ${document.records.size + problemReferenceIds.size} records, exceeding the governance limit of $maxRecords. No broad replacement selector was generated.",
+                        "The exact debt baseline would contain ${document.records.size + selectedReferenceIds.size} records, exceeding the governance limit of $maxRecords. No broad replacement selector was generated.",
                     ),
                 ),
             )
@@ -132,7 +142,7 @@ class CycleDebtBaselinePlanner private constructor(
         }
 
         val added = linkedMapOf<String, CycleGovernanceRecord>()
-        for (referenceId in problemReferenceIds) {
+        for (referenceId in selectedReferenceIds) {
             val reference = referencesById.getValue(referenceId).single()
             val recordId = baselineRecordId(reference)
             val record = reference.toBaselineRecord(options)
@@ -191,6 +201,7 @@ class CycleDebtBaselinePlanner private constructor(
                 resultingEvaluation = resulting,
                 problemGroupCount = starting.problemGroups.size,
                 problemReferenceCount = problemReferenceIds.size,
+                selectedEdgeCount = selectedEdges.size,
                 alreadyGovernedReferenceCount = alreadyGovernedReferenceIds.size,
                 untouchedRecordCount = document.records.size,
             ),

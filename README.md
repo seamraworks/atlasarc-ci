@@ -138,9 +138,11 @@ java -jar <path-to>/atlasarc-ci-<version>-standalone.jar baseline \
 ```
 
 The first command previews a deterministic proposal; the second is the explicit, atomic mutation.
-It adds one `REFERENCE`-scope `DEBT` record per current ungoverned cycle dependency, preserves every
-existing decision, and becomes a byte-level no-op when rerun against unchanged evidence. Review and
-commit the resulting file, then keep `evaluate` as the ordinary read-only gate. See the
+It selects a narrow set of dependency edges whose governance makes the current problem graph
+acyclic, then adds one `REFERENCE`-scope `DEBT` record for each current concrete reference on those
+edges. It preserves every existing decision and becomes a byte-level no-op when rerun against
+unchanged evidence. Review and commit the resulting file, then keep `evaluate` as the ordinary
+read-only gate. See the
 [cycle-debt baseline guide](docs/cycle-debt-baseline.md) for the complete fail-closed workflow.
 
 ## Configure the standalone evaluator

@@ -210,8 +210,10 @@ java -jar atlasarc-ci-<version>-standalone.jar baseline \
   --config .atlasarc/evaluator.json
 ```
 
-Add `--write` only after reviewing the preview. Optional `--reason` and `--ticket` values apply to
-the newly generated Debt records. Baseline output supports human text and JSON, not SARIF. See
+The preview distinguishes all current problem references from the narrower cycle-breaking edges
+and exact Debt records selected to make the problem graph acyclic. Add `--write` only after
+reviewing that proposal. Optional `--reason` and `--ticket` values apply to the newly generated Debt
+records. Baseline output supports human text and JSON, not SARIF. See
 [Establish a cycle-debt baseline](cycle-debt-baseline.md) for the safety conditions, record
 semantics, and adoption workflow.
 

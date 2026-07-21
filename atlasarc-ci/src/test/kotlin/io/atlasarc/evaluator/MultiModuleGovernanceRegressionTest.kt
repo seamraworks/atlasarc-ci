@@ -118,7 +118,8 @@ class MultiModuleGovernanceRegressionTest {
 
         assertEquals(EvaluatorExitCode.CLEAN, exitCode, stdout.toString() + stderr.toString())
         assertTrue(baseline.written)
-        assertEquals(6, baseline.summary.recordsToAdd)
+        assertEquals(3, baseline.summary.selectedCycleBreakingEdges)
+        assertEquals(3, baseline.summary.recordsToAdd)
         assertEquals(setOf("billing", "orders", "reporting"), baseline.records.mapTo(sortedSetOf()) { it.sourceModule })
         assertTrue(baseline.records.all { it.sourceModule == it.targetModule })
         assertFalse(baseline.records.any { it.sourceModule.isBlank() || it.targetModule.isBlank() })

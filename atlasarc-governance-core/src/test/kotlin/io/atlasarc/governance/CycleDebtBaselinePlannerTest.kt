@@ -13,14 +13,15 @@ class CycleDebtBaselinePlannerTest {
     private val planner = CycleDebtBaselinePlanner()
 
     @Test
-    fun `creates one exact debt record per uncovered cycle reference and proves a clean result`() {
+    fun `creates exact debt only for a minimum cycle-breaking edge set and proves a clean result`() {
         val proposal = assertIs<CycleDebtBaselineResult.Proposed>(
             planner.propose(CycleGovernanceDocument(), listOf(cycle())),
         ).proposal
 
         assertEquals(1, proposal.problemGroupCount)
         assertEquals(3, proposal.problemReferenceCount)
-        assertEquals(3, proposal.addedRecords.size)
+        assertEquals(1, proposal.selectedEdgeCount)
+        assertEquals(1, proposal.addedRecords.size)
         assertEquals(0, proposal.alreadyGovernedReferenceCount)
         assertEquals(GovernanceEvaluationVerdict.CLEAN, proposal.resultingEvaluation.verdict)
         proposal.addedRecords.values.forEach { record ->
@@ -65,7 +66,8 @@ class CycleDebtBaselinePlannerTest {
 
         assertEquals(existing, proposal.proposedDocument.records.getValue("existing"))
         assertEquals(1, proposal.alreadyGovernedReferenceCount)
-        assertEquals(2, proposal.addedRecords.size)
+        assertEquals(1, proposal.selectedEdgeCount)
+        assertEquals(1, proposal.addedRecords.size)
         proposal.addedRecords.values.forEach { record ->
             assertEquals(GovernanceLanguage.KOTLIN, record.analysisSource.language)
             assertEquals("billing", record.source.module)
@@ -95,7 +97,8 @@ class CycleDebtBaselinePlannerTest {
             planner.propose(CycleGovernanceDocument(), listOf(cycle(backend = GovernanceBackend.TYPESCRIPT_ARTIFACT))),
         ).proposal
 
-        assertEquals(3, proposal.addedRecords.size)
+        assertEquals(1, proposal.selectedEdgeCount)
+        assertEquals(1, proposal.addedRecords.size)
         proposal.addedRecords.values.forEach { record ->
             assertEquals(GovernanceBackend.TYPESCRIPT_ARTIFACT, record.analysisSource.backend)
             assertEquals(GovernanceLanguage.TYPESCRIPT, record.analysisSource.language)
@@ -153,7 +156,7 @@ class CycleDebtBaselinePlannerTest {
         val proposal = assertIs<CycleDebtBaselineResult.Proposed>(
             planner.propose(CycleGovernanceDocument(), listOf(input)),
         ).proposal
-        val removedReferenceId = input.evidence.references.first().id
+        val removedReferenceId = proposal.addedRecords.values.single().referenceIds.single()
         val remainingReferences = input.evidence.references.filterNot { it.id == removedReferenceId }
         val reduced = input.copy(
             evidence = input.evidence.copy(
@@ -214,7 +217,7 @@ class CycleDebtBaselinePlannerTest {
 
     @Test
     fun `refuses capacity overflow instead of compacting into broad selectors`() {
-        val result = CycleDebtBaselinePlanner(maxRecords = 2)
+        val result = CycleDebtBaselinePlanner(maxRecords = 0)
             .propose(CycleGovernanceDocument(), listOf(cycle()))
 
         val refused = assertIs<CycleDebtBaselineResult.Refused>(result)

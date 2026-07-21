@@ -405,8 +405,9 @@ class EvaluatorApplication(
         It never invokes build tools or Node tooling. Machine output never includes governance
         reasons/tickets or absolute workstation paths.
 
-        Baseline preview is read-only. --write adds one exact DEBT record per currently ungoverned
-        concrete reference in a problem cycle; it never broadly accepts future dependencies.
+        Baseline preview is read-only. --write selects cycle-breaking edges and adds one exact DEBT
+        record per current reference on those edges; it never accepts every SCC edge or broadly
+        covers future dependencies.
 
         Exit codes: 0 clean; 1 ungoverned cycles; 2 invalid/stale/configuration failure; 3 internal error.
     """.trimIndent() + "\n"

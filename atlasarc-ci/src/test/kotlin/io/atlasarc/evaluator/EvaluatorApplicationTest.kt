@@ -193,7 +193,9 @@ class EvaluatorApplicationTest {
 
         assertEquals(EvaluatorExitCode.CLEAN, baseline.exitCode, baseline.stdout + baseline.stderr)
         assertTrue(baselineResult.written)
-        assertEquals(2, baselineResult.summary.recordsToAdd)
+        assertEquals(2, baselineResult.summary.ungovernedCycleReferences)
+        assertEquals(1, baselineResult.summary.selectedCycleBreakingEdges)
+        assertEquals(1, baselineResult.summary.recordsToAdd)
         assertEquals(EvaluatorExitCode.CLEAN, evaluation.exitCode)
         val document = CycleGovernanceRepository().read(root) as io.atlasarc.governance.GovernanceReadResult.Loaded
         assertTrue(document.value.document.records.values.all { it.scope == GovernanceScope.REFERENCE })
@@ -227,7 +229,9 @@ class EvaluatorApplicationTest {
         assertTrue(result.safe)
         assertFalse(result.writeRequested)
         assertFalse(result.written)
+        assertTrue(result.summary.selectedCycleBreakingEdges > 0)
         assertTrue(result.summary.recordsToAdd > 0)
+        assertTrue(result.summary.recordsToAdd < result.summary.ungovernedCycleReferences)
         assertEquals("clean", result.resultingVerdict)
         assertFalse(Files.exists(root.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH)))
     }

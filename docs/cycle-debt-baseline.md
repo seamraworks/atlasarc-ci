@@ -1,15 +1,16 @@
 # Establish a cycle-debt baseline
 
 An established repository may already contain dependency cycles when AtlasArc.io CI is adopted.
-The explicit `baseline` command records those current cycle-forming references as reviewable
-`DEBT` in `.atlasarc/governance/cycles.json`. Ordinary evaluation can then pass for the known
-backlog while a genuinely new ungoverned cycle still fails.
+The explicit `baseline` command selects cycle-breaking dependency edges and records only their
+current concrete references as reviewable `DEBT` in `.atlasarc/governance/cycles.json`. Ordinary
+evaluation can then pass for the known backlog while a genuinely new ungoverned cycle still fails.
 
 This is an adoption step, not a second evaluation mode. The generated records use the ordinary
 governance schema and remain visible to AtlasArc for IntelliJ, the standalone evaluator, and the
 ArchUnit/JUnit adapter.
 
-The command is introduced in AtlasArc.io CI 1.1.0.
+The command was introduced in AtlasArc.io CI 1.1.0. Narrow feedback-edge selection replaces the
+original all-edges proposal in 1.2.0.
 
 ## Before you begin
 
@@ -32,6 +33,7 @@ java -jar atlasarc-ci-<version>-standalone.jar baseline \
 The preview reports:
 
 - current ungoverned problem-cycle groups and concrete references;
+- the cycle-breaking unit edges selected from those groups;
 - references in those groups that existing governance already covers;
 - exact debt records that would be added;
 - existing records that will remain untouched; and
@@ -57,6 +59,18 @@ Every generated record:
 - retains source and target module identity when the evidence is module-qualified; and
 - uses the standard reason `Established as existing cycle debt by the AtlasArc CI baseline.`
 
+AtlasArc does not accept every edge in a strongly connected component. For components of up to 18
+architecture units, it computes an exact feedback-edge set: minimize selected unit edges first,
+then minimize the number of concrete references that must be governed. Stable source, target,
+module, and analysis-source identities break remaining ties. Larger components use a bounded,
+deterministic ordering heuristic and discard redundant cuts. In both paths AtlasArc applies the
+proposal in memory and refuses it unless ordinary evaluation proves the resulting problem graph is
+clean.
+
+When one selected unit edge represents several calls or imports, every currently uncovered
+reference on that edge receives its own exact record. Leaving even one uncovered would leave the
+unit edge in the problem graph. References on non-selected SCC edges are not accepted.
+
 Use `--reason "..."` to replace the standard reason and `--ticket "..."` to attach one shared
 tracking reference to the generated records. Existing record IDs, selectors, classifications,
 reasons, tickets, and display data are preserved exactly.
@@ -76,13 +90,15 @@ java -jar atlasarc-ci-<version>-standalone.jar evaluate \
 ```
 
 The baseline does not hide structural dependencies or store opaque cycle IDs. It removes only the
-exact governed references from the cycle problem graph and recomputes strongly connected
-components. A new dependency fails when it participates in a new ungoverned problem cycle; a new
-dependency that does not form such a cycle is not a cycle-governance violation.
+selected exact references from the cycle problem graph and recomputes strongly connected
+components. A new dependency—including a new reference parallel to a selected edge—remains
+uncovered and fails when it participates in a new ungoverned problem cycle. A new dependency that
+does not form such a cycle is not a cycle-governance violation.
 
 Use AtlasArc for IntelliJ's **Cycle Governance** dialog to establish the same baseline visually from
-a fresh whole-project analysis. The governance hub shows the number of problem cycles and exact
-debt records before writing, then supports normal review, reclassification, repair, and removal.
+a fresh whole-project analysis. The governance hub distinguishes current problem cycles, selected
+cycle-breaking edges, and exact debt records before writing, then supports normal review,
+reclassification, repair, and removal.
 
 ## When AtlasArc refuses
 
