@@ -1,8 +1,5 @@
 # Define repository analysis scope
 
-> This contract is implemented on `main` for the next minor release. Maven Central `1.2.0` does not
-> consume `scope.json` yet.
-
 Repository scope answers one question before AtlasArc evaluates architecture: **which architecture
 units are outside this repository's governed evidence universe?** The policy is committed at the
 Git root as `.atlasarc/governance/scope.json` and is applied identically by the standalone
