@@ -80,6 +80,7 @@ class CycleGovernanceRepositoryTest {
 
         val ignored = assertInstanceOf(GovernanceWriteResult.IgnoredPath::class.java, result)
         assertEquals(".gitignore", ignored.rule?.source)
+        assertInstanceOf(GovernanceWriteCheckResult.IgnoredPath::class.java, repository.checkWrite(root))
         assertFalse(Files.exists(root.resolve(".atlasarc/governance/cycles.json")))
     }
 

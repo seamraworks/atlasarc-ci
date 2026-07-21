@@ -238,14 +238,21 @@ class CycleGovernanceMatcher(
                 retargetCandidates = candidates(record, GovernanceOwnerSide.TARGET, evidence, usableSources),
             )
         }
-        val ambiguityDiagnostics = listOfNotNull(
+        val detectedAmbiguity = listOfNotNull(
             ambiguityDiagnostic(record, GovernanceOwnerSide.SOURCE, sourceNodes, evidence.caseSensitive),
             ambiguityDiagnostic(record, GovernanceOwnerSide.TARGET, targetNodes, evidence.caseSensitive),
         )
+        val hasModuleAmbiguity =
+            isModuleAmbiguous(record.source, sourceNodes, evidence.caseSensitive) ||
+                isModuleAmbiguous(record.target, targetNodes, evidence.caseSensitive)
+        // A concrete reference ID is the final disambiguator for member/declaration evidence.
+        // Module ambiguity remains blocking because module identity is part of that stable ID.
+        val ambiguityDiagnostics = if (record.scope == GovernanceScope.REFERENCE && !hasModuleAmbiguity) {
+            emptyList()
+        } else {
+            detectedAmbiguity
+        }
         if (ambiguityDiagnostics.isNotEmpty()) {
-            val hasModuleAmbiguity =
-                isModuleAmbiguous(record.source, sourceNodes, evidence.caseSensitive) ||
-                    isModuleAmbiguous(record.target, targetNodes, evidence.caseSensitive)
             return GovernanceRecordMatch(
                 recordId,
                 GovernanceRecordStatus.AMBIGUOUS,

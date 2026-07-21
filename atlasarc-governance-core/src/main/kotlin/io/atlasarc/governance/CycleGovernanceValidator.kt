@@ -1,5 +1,7 @@
 package io.atlasarc.governance
 
+const val MAX_CYCLE_GOVERNANCE_RECORDS: Int = 10_000
+
 class CycleGovernanceValidator {
     fun validate(document: CycleGovernanceDocument): List<GovernanceValidationIssue> {
         val issues = mutableListOf<GovernanceValidationIssue>()
@@ -17,8 +19,8 @@ class CycleGovernanceValidator {
                 message = "Schema URI must be $CYCLE_GOVERNANCE_SCHEMA_URI.",
             )
         }
-        if (document.records.size > MAX_RECORDS) {
-            issues += issue("too-many-records", "records", "At most $MAX_RECORDS governance records are supported.")
+        if (document.records.size > MAX_CYCLE_GOVERNANCE_RECORDS) {
+            issues += issue("too-many-records", "records", "At most $MAX_CYCLE_GOVERNANCE_RECORDS governance records are supported.")
         }
 
         document.records.toSortedMap().forEach { (id, record) ->
@@ -211,7 +213,6 @@ class CycleGovernanceValidator {
         val RECORD_ID = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$")
         val JVM_SCOPES = setOf(GovernanceScope.PACKAGE, GovernanceScope.TYPE, GovernanceScope.MEMBER, GovernanceScope.REFERENCE)
         val TYPESCRIPT_SCOPES = setOf(GovernanceScope.SOURCE_FOLDER, GovernanceScope.SOURCE_FILE, GovernanceScope.REFERENCE)
-        const val MAX_RECORDS = 10_000
         const val MAX_IDENTITY = 512
         const val MAX_PATH = 2_048
         const val MAX_REASON = 4_096

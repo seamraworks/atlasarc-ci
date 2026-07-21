@@ -182,6 +182,40 @@ class CycleGovernanceMatcherTest {
     }
 
     @Test
+    fun `reference id disambiguates concrete evidence when declaration metadata is necessarily incomplete`() {
+        val source = identity("a", "a.Origin", sourceFile = "src/main/java/a/Origin.java")
+        val target = identity("b", "b.Target", sourceFile = "src/main/java/b/Target.java")
+        val reference = ref("exact-reference", source, target)
+        val exact = record(
+            scope = GovernanceScope.REFERENCE,
+            source = source,
+            target = target,
+        ).copy(referenceIds = setOf(reference.id))
+        val additionalDeclarationEvidence = listOf(
+            GovernanceEvidenceNode(
+                JVM_ID,
+                GovernanceBackend.JVM_BYTECODE,
+                GovernanceLanguage.JAVA,
+                source.copy(member = GovernanceMemberIdentity("first", "()V")),
+            ),
+            GovernanceEvidenceNode(
+                JVM_ID,
+                GovernanceBackend.JVM_BYTECODE,
+                GovernanceLanguage.JAVA,
+                source.copy(member = GovernanceMemberIdentity("second", "()V")),
+            ),
+        )
+
+        val match = matcher.match(
+            document("exact" to exact),
+            snapshot(jvmSource(), listOf(reference), additionalDeclarationEvidence),
+        ).records.getValue("exact")
+
+        assertEquals(GovernanceRecordStatus.ACTIVE, match.status)
+        assertEquals(listOf(reference.id), match.matchedReferenceIds)
+    }
+
+    @Test
     fun `unqualified package governance fails ambiguous for a split package`() {
         val references = listOf(
             ref(

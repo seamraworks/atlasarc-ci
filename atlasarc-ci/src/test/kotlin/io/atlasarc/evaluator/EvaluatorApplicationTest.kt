@@ -7,6 +7,7 @@ import io.atlasarc.governance.CycleGovernanceCodec
 import io.atlasarc.governance.CycleGovernanceDocument
 import io.atlasarc.governance.CycleGovernanceKind
 import io.atlasarc.governance.CycleGovernanceRecord
+import io.atlasarc.governance.CycleGovernanceRepository
 import io.atlasarc.governance.GovernanceAnalysisSource
 import io.atlasarc.governance.GovernanceBackend
 import io.atlasarc.governance.GovernanceEncodeResult
@@ -39,7 +40,7 @@ class EvaluatorApplicationTest {
 
     @BeforeEach
     fun prepareJvmCycle() {
-        root.resolve(".git").createDirectories()
+        assertEquals(0, ProcessBuilder("git", "init", "--quiet", root.toString()).start().waitFor())
         sourceRoot = root.resolve("src/main/java")
         classesRoot = root.resolve("build/classes")
         val a = sourceRoot.resolve("a/A.java")
@@ -161,6 +162,147 @@ class EvaluatorApplicationTest {
 
     @Test
     fun `real TypeScript artifact acquisition reports folder cycle without invoking Node tooling`() {
+        prepareTypeScriptCycle()
+
+        val execution = execute(
+            arrayOf(
+                "evaluate",
+                "--backend", "typescript-artifact",
+                "--source-id", "typescript:frontend",
+                "--root", ".",
+                "--dependency-cruiser", ".atlasarc/depgraph.json",
+                "--repository-root", ".",
+                "--format", "json",
+            ),
+        )
+        val result = Json.decodeFromString<GovernanceEvaluationResult>(execution.stdout)
+
+        assertEquals(EvaluatorExitCode.PROBLEMS, execution.exitCode)
+        assertEquals(listOf("src/app", "src/domain"), result.problemGroups.single().members.map { it.architectureUnit })
+        assertFalse(execution.stdout.contains(root.toString(), ignoreCase = true))
+    }
+
+    @Test
+    fun `TypeScript baseline writes exact debt and makes ordinary evaluation clean`() {
+        val configPath = root.resolve(".atlasarc/typescript-evaluator.json")
+        Files.writeString(configPath, EvaluatorConfigCodec.encode(prepareTypeScriptCycle()))
+
+        val baseline = execute(arrayOf("baseline", "--config", configPath.toString(), "--write", "--format", "json"))
+        val baselineResult = Json.decodeFromString<CycleDebtBaselineCommandResult>(baseline.stdout)
+        val evaluation = execute(arrayOf("evaluate", "--config", configPath.toString(), "--format", "json"))
+
+        assertEquals(EvaluatorExitCode.CLEAN, baseline.exitCode, baseline.stdout + baseline.stderr)
+        assertTrue(baselineResult.written)
+        assertEquals(2, baselineResult.summary.recordsToAdd)
+        assertEquals(EvaluatorExitCode.CLEAN, evaluation.exitCode)
+        val document = CycleGovernanceRepository().read(root) as io.atlasarc.governance.GovernanceReadResult.Loaded
+        assertTrue(document.value.document.records.values.all { it.scope == GovernanceScope.REFERENCE })
+    }
+
+    @Test
+    fun `invalid config emits exit two JSON rather than a false clean result`() {
+        val configPath = root.resolve("invalid-evaluator.json")
+        Files.writeString(configPath, """{"configVersion":1,"sources":[]}""")
+
+        val execution = execute(
+            arrayOf("evaluate", "--config", configPath.toString(), "--format", "json"),
+        )
+        val result = Json.decodeFromString<GovernanceEvaluationResult>(execution.stdout)
+
+        assertEquals(EvaluatorExitCode.INVALID, execution.exitCode)
+        assertEquals(GovernanceEvaluationVerdict.INVALID, result.verdict)
+        assertTrue(result.issues.any { it.code == "invalid-evaluator-config" })
+    }
+
+    @Test
+    fun `baseline preview is deterministic and does not write`() {
+        val configPath = writeEvaluatorConfig()
+
+        val first = execute(arrayOf("baseline", "--config", configPath.toString(), "--format", "json"))
+        val second = execute(arrayOf("baseline", "--config", configPath.toString(), "--format", "json"))
+
+        assertEquals(EvaluatorExitCode.CLEAN, first.exitCode, first.stdout + first.stderr)
+        assertEquals(first.stdout, second.stdout)
+        val result = Json.decodeFromString<CycleDebtBaselineCommandResult>(first.stdout)
+        assertTrue(result.safe)
+        assertFalse(result.writeRequested)
+        assertFalse(result.written)
+        assertTrue(result.summary.recordsToAdd > 0)
+        assertEquals("clean", result.resultingVerdict)
+        assertFalse(Files.exists(root.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH)))
+    }
+
+    @Test
+    fun `baseline write is atomic and an unchanged rerun preserves bytes`() {
+        val configPath = writeEvaluatorConfig()
+        val arguments = arrayOf(
+            "baseline", "--config", configPath.toString(), "--write", "--format", "json",
+            "--reason", "Existing debt at CI adoption.", "--ticket", "ARCH-42",
+        )
+
+        val first = execute(arguments)
+        val path = root.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH)
+        assertEquals(EvaluatorExitCode.CLEAN, first.exitCode, first.stdout + first.stderr)
+        val bytes = Files.readAllBytes(path)
+        val second = execute(arguments)
+
+        assertEquals(EvaluatorExitCode.CLEAN, first.exitCode)
+        assertTrue(Json.decodeFromString<CycleDebtBaselineCommandResult>(first.stdout).written)
+        val rerun = Json.decodeFromString<CycleDebtBaselineCommandResult>(second.stdout)
+        assertEquals(EvaluatorExitCode.CLEAN, second.exitCode)
+        assertEquals(0, rerun.summary.recordsToAdd)
+        assertFalse(rerun.written)
+        assertTrue(rerun.noChange)
+        assertTrue(bytes.contentEquals(Files.readAllBytes(path)))
+        val evaluation = execute(arrayOf("evaluate", "--config", configPath.toString(), "--format", "json"))
+        assertEquals(EvaluatorExitCode.CLEAN, evaluation.exitCode)
+    }
+
+    @Test
+    fun `baseline refuses stale evidence and ignored governance without writing`() {
+        val configPath = writeEvaluatorConfig()
+        Files.setLastModifiedTime(sourceRoot.resolve("a/A.java"), FileTime.fromMillis(System.currentTimeMillis() + 10_000))
+        val stale = execute(arrayOf("baseline", "--config", configPath.toString(), "--write", "--format", "json"))
+
+        assertEquals(EvaluatorExitCode.INVALID, stale.exitCode)
+        assertFalse(Files.exists(root.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH)))
+
+        val old = FileTime.fromMillis(System.currentTimeMillis() - 10_000)
+        Files.setLastModifiedTime(sourceRoot.resolve("a/A.java"), old)
+        Files.writeString(root.resolve(".gitignore"), ".atlasarc/\n")
+        val ignored = execute(arrayOf("baseline", "--config", configPath.toString(), "--format", "json"))
+
+        assertEquals(EvaluatorExitCode.INVALID, ignored.exitCode)
+        assertTrue(Json.decodeFromString<CycleDebtBaselineCommandResult>(ignored.stdout).diagnostics.any {
+            it.code == "ignored-governance-path"
+        })
+        assertFalse(Files.exists(root.resolve(CYCLE_GOVERNANCE_RELATIVE_PATH)))
+    }
+
+    private fun runJson(): Execution = execute(directArguments("json"))
+
+    private fun writeEvaluatorConfig(): Path {
+        val path = root.resolve(".atlasarc/evaluator.json")
+        path.parent.createDirectories()
+        Files.writeString(
+            path,
+            EvaluatorConfigCodec.encode(
+                EvaluatorConfig(
+                    sources = listOf(
+                        EvaluatorSourceConfig(
+                            id = "jvm:main",
+                            backend = GovernanceBackend.JVM_BYTECODE,
+                            classDirectories = listOf(EvaluatorPathSpec("build/classes", "main")),
+                            sourceRoots = listOf(EvaluatorPathSpec("src/main/java", "main")),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        return path
+    }
+
+    private fun prepareTypeScriptCycle(): EvaluatorConfig {
         val appFile = root.resolve("src/app/index.ts")
         val domainFile = root.resolve("src/domain/model.ts")
         appFile.parent.createDirectories()
@@ -190,41 +332,17 @@ class EvaluatorApplicationTest {
             }
             """.trimIndent(),
         )
-
-        val execution = execute(
-            arrayOf(
-                "evaluate",
-                "--backend", "typescript-artifact",
-                "--source-id", "typescript:frontend",
-                "--root", ".",
-                "--dependency-cruiser", ".atlasarc/depgraph.json",
-                "--repository-root", ".",
-                "--format", "json",
+        return EvaluatorConfig(
+            sources = listOf(
+                EvaluatorSourceConfig(
+                    id = "typescript:frontend",
+                    backend = GovernanceBackend.TYPESCRIPT_ARTIFACT,
+                    root = ".",
+                    dependencyCruiserJson = ".atlasarc/depgraph.json",
+                ),
             ),
         )
-        val result = Json.decodeFromString<GovernanceEvaluationResult>(execution.stdout)
-
-        assertEquals(EvaluatorExitCode.PROBLEMS, execution.exitCode)
-        assertEquals(listOf("src/app", "src/domain"), result.problemGroups.single().members.map { it.architectureUnit })
-        assertFalse(execution.stdout.contains(root.toString(), ignoreCase = true))
     }
-
-    @Test
-    fun `invalid config emits exit two JSON rather than a false clean result`() {
-        val configPath = root.resolve("invalid-evaluator.json")
-        Files.writeString(configPath, """{"configVersion":1,"sources":[]}""")
-
-        val execution = execute(
-            arrayOf("evaluate", "--config", configPath.toString(), "--format", "json"),
-        )
-        val result = Json.decodeFromString<GovernanceEvaluationResult>(execution.stdout)
-
-        assertEquals(EvaluatorExitCode.INVALID, execution.exitCode)
-        assertEquals(GovernanceEvaluationVerdict.INVALID, result.verdict)
-        assertTrue(result.issues.any { it.code == "invalid-evaluator-config" })
-    }
-
-    private fun runJson(): Execution = execute(directArguments("json"))
 
     private fun directArguments(format: String) = arrayOf(
         "evaluate",

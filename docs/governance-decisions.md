@@ -21,9 +21,10 @@ standalone evaluator, and the ArchUnit/JUnit adapter.
 6. Let local tests and CI re-evaluate the decision against fresh evidence.
 7. Repair or remove records when packages, modules, declarations, or concrete references move.
 
-AtlasArc.io for IntelliJ supplies the intended visual authoring, reclassification, repair, and
-removal workflow. The contract is public and may be maintained by other tooling, but normal CI
-evaluation is read-only: it never creates a baseline or edits the file.
+AtlasArc.io for IntelliJ supplies the intended visual authoring, baseline, reclassification, repair,
+and removal workflow. The contract is public and may be maintained by other tooling. Ordinary CI
+evaluation is always read-only; the separate, explicitly invoked
+[`baseline --write`](cycle-debt-baseline.md) adoption command is the only standalone mutation flow.
 
 ## Start with no accepted decisions
 

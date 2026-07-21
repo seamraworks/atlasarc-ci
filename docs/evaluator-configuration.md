@@ -200,6 +200,21 @@ java -jar atlasarc-ci-<version>-standalone.jar evaluate \
 `--config` cannot be combined with direct source options. Both modes accept `--format` and
 `--output`.
 
+## Establish an existing-debt baseline
+
+Baseline generation requires a configuration file because AtlasArc must prove that the evidence is
+complete before writing durable governance. Preview the exact records without changing the file:
+
+```shell
+java -jar atlasarc-ci-<version>-standalone.jar baseline \
+  --config .atlasarc/evaluator.json
+```
+
+Add `--write` only after reviewing the preview. Optional `--reason` and `--ticket` values apply to
+the newly generated Debt records. Baseline output supports human text and JSON, not SARIF. See
+[Establish a cycle-debt baseline](cycle-debt-baseline.md) for the safety conditions, record
+semantics, and adoption workflow.
+
 ## Output contracts
 
 | Option | Purpose |

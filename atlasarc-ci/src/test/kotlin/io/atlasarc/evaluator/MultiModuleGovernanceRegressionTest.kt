@@ -16,6 +16,7 @@ import java.nio.file.attribute.FileTime
 import javax.tools.ToolProvider
 import kotlin.io.path.createDirectories
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /** End-to-end regression corpus for module-qualified governance over split packages. */
@@ -28,7 +29,7 @@ class MultiModuleGovernanceRegressionTest {
 
     @BeforeEach
     fun compileFixture() {
-        repository.resolve(".git").createDirectories()
+        assertEquals(0, ProcessBuilder("git", "init", "--quiet", repository.toString()).start().waitFor())
         copyTree(fixture.resolve("modules"), repository.resolve("modules"))
         listOf("orders", "billing", "reporting").forEach(::compileModule)
         val config = repository.resolve(".atlasarc/evaluator.json")
@@ -101,6 +102,32 @@ class MultiModuleGovernanceRegressionTest {
         )
     }
 
+    @Test
+    fun `baseline keeps identical package names separate across modules`() {
+        val governance = repository.resolve(".atlasarc/governance/cycles.json")
+        governance.parent.createDirectories()
+        Files.copy(fixture.resolve("governance/empty.json"), governance, StandardCopyOption.REPLACE_EXISTING)
+
+        val stdout = ByteArrayOutputStream()
+        val stderr = ByteArrayOutputStream()
+        val exitCode = EvaluatorApplication(PrintStream(stdout), PrintStream(stderr)).run(
+            arrayOf("baseline", "--config", ".atlasarc/evaluator.json", "--write", "--format", "json"),
+            repository,
+        )
+        val baseline = Json.decodeFromString<CycleDebtBaselineCommandResult>(stdout.toString(Charsets.UTF_8))
+
+        assertEquals(EvaluatorExitCode.CLEAN, exitCode, stdout.toString() + stderr.toString())
+        assertTrue(baseline.written)
+        assertEquals(6, baseline.summary.recordsToAdd)
+        assertEquals(setOf("billing", "orders", "reporting"), baseline.records.mapTo(sortedSetOf()) { it.sourceModule })
+        assertTrue(baseline.records.all { it.sourceModule == it.targetModule })
+        assertFalse(baseline.records.any { it.sourceModule.isBlank() || it.targetModule.isBlank() })
+
+        val evaluation = evaluateCurrentGovernance()
+        assertEquals(EvaluatorExitCode.CLEAN, evaluation.exitCode)
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, evaluation.result.verdict)
+    }
+
     private fun evaluate(governanceState: String): Execution {
         val governance = repository.resolve(".atlasarc/governance/cycles.json")
         governance.parent.createDirectories()
@@ -109,6 +136,10 @@ class MultiModuleGovernanceRegressionTest {
             governance,
             StandardCopyOption.REPLACE_EXISTING,
         )
+        return evaluateCurrentGovernance()
+    }
+
+    private fun evaluateCurrentGovernance(): Execution {
         val stdout = ByteArrayOutputStream()
         val stderr = ByteArrayOutputStream()
         val exitCode = EvaluatorApplication(PrintStream(stdout), PrintStream(stderr)).run(

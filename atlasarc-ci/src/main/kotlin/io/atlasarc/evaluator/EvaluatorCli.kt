@@ -9,7 +9,15 @@ sealed interface EvaluatorCommand {
     data object Help : EvaluatorCommand
     data object Version : EvaluatorCommand
     data class Evaluate(val invocation: EvaluatorInvocation) : EvaluatorCommand
+    data class Baseline(val invocation: BaselineInvocation) : EvaluatorCommand
 }
+
+data class BaselineInvocation(
+    val evaluator: EvaluatorInvocation,
+    val write: Boolean,
+    val reason: String?,
+    val ticket: String?,
+)
 
 data class EvaluatorInvocation(
     val configPath: Path?,
@@ -22,7 +30,8 @@ data class EvaluatorInvocation(
 object EvaluatorCli {
     fun parse(arguments: Array<String>, currentDirectory: Path): EvaluatorCommand {
         val args = arguments.toMutableList()
-        if (args.firstOrNull() == "evaluate") args.removeAt(0)
+        val baseline = args.firstOrNull() == "baseline"
+        if (args.firstOrNull() == "evaluate" || baseline) args.removeAt(0)
         if (args.isEmpty() || args.singleOrNull() in setOf("--help", "-h", "help")) {
             return EvaluatorCommand.Help
         }
@@ -40,6 +49,9 @@ object EvaluatorCli {
         var dependencyCruiser: String? = null
         var format = EvaluatorOutputFormat.HUMAN
         var output: Path? = null
+        var write = false
+        var reason: String? = null
+        var ticket: String? = null
 
         fun requireValue(index: Int, option: String): String =
             args.getOrNull(index + 1)?.takeUnless { it.startsWith("--") }
@@ -93,6 +105,18 @@ object EvaluatorCli {
                     output = Path.of(requireValue(index, option))
                     index += 2
                 }
+                "--write" -> {
+                    write = true
+                    index++
+                }
+                "--reason" -> {
+                    reason = requireValue(index, option)
+                    index += 2
+                }
+                "--ticket" -> {
+                    ticket = requireValue(index, option)
+                    index += 2
+                }
                 "--help", "-h" -> return EvaluatorCommand.Help
                 "--version" -> return EvaluatorCommand.Version
                 else -> throw EvaluatorConfigurationException("Unknown evaluator option '$option'.")
@@ -109,15 +133,30 @@ object EvaluatorCli {
                 )
             }
             val resolvedConfig = resolve(currentDirectory, configPath)
-            return EvaluatorCommand.Evaluate(
-                EvaluatorInvocation(
+            val evaluator = EvaluatorInvocation(
                     configPath = resolvedConfig,
                     directConfig = null,
                     configBase = resolvedConfig.parent ?: currentDirectory,
                     format = format,
                     output = output?.let { resolve(currentDirectory, it) },
-                ),
-            )
+                )
+            if (baseline) {
+                if (format == EvaluatorOutputFormat.SARIF) {
+                    throw EvaluatorConfigurationException("Baseline output must be human or json, not sarif.")
+                }
+                return EvaluatorCommand.Baseline(BaselineInvocation(evaluator, write, reason, ticket))
+            }
+            if (write || reason != null || ticket != null) {
+                throw EvaluatorConfigurationException("--write, --reason, and --ticket are baseline options.")
+            }
+            return EvaluatorCommand.Evaluate(evaluator)
+        }
+
+        if (baseline) {
+            throw EvaluatorConfigurationException("Baseline generation requires --config with complete repository evidence.")
+        }
+        if (write || reason != null || ticket != null) {
+            throw EvaluatorConfigurationException("--write, --reason, and --ticket are baseline options.")
         }
 
         val resolvedBackend = backend

@@ -64,6 +64,8 @@ contract and evaluator. It is not a separate end-user workflow.
   TypeScript evidence, module identity, path resolution, freshness, output, and troubleshooting.
 - [Govern cycle decisions](docs/governance-decisions.md) explains `cycles.json`, the decision
   workflow, scopes, ownership, Intentional/Debt semantics, record health, and review practices.
+- [Establish a cycle-debt baseline](docs/cycle-debt-baseline.md) explains how to adopt the gate in a
+  repository with existing cycles without broadly accepting future dependencies.
 - [Documentation index](docs/README.md) routes to the guides, schemas, examples, and extension API.
 
 The guides explain how to use the files. The bundled JSON schemas remain the exact machine
@@ -125,9 +127,21 @@ java -jar <path-to>/atlasarc-ci-1.0.0-standalone.jar evaluate \
 ```
 
 This first run establishes the useful default: no cycle is silently accepted. Refactor a reported
-cycle, or record a deliberate decision in `cycles.json` and commit it with the code review that
-explains the choice. The evaluator itself is read-only; use AtlasArc.io for IntelliJ for the visual
-authoring and repair workflow, or maintain the public JSON contract with your own tooling.
+cycle, record deliberate decisions in `cycles.json`, or—starting with AtlasArc.io CI 1.1.0—establish
+the current backlog as exact Debt before enabling the gate:
+
+```shell
+java -jar <path-to>/atlasarc-ci-<version>-standalone.jar baseline \
+  --config .atlasarc/evaluator.json
+java -jar <path-to>/atlasarc-ci-<version>-standalone.jar baseline \
+  --config .atlasarc/evaluator.json --write
+```
+
+The first command previews a deterministic proposal; the second is the explicit, atomic mutation.
+It adds one `REFERENCE`-scope `DEBT` record per current ungoverned cycle dependency, preserves every
+existing decision, and becomes a byte-level no-op when rerun against unchanged evidence. Review and
+commit the resulting file, then keep `evaluate` as the ordinary read-only gate. See the
+[cycle-debt baseline guide](docs/cycle-debt-baseline.md) for the complete fail-closed workflow.
 
 ## Configure the standalone evaluator
 
@@ -333,9 +347,11 @@ implementation("io.atlasarc:atlasarc-governance-core:1.0.0")
 ```
 
 Create a `GovernanceEvidenceSnapshot`, wrap it in `GovernanceEvaluationInput`, and call
-`CycleGovernanceEvaluator.evaluate`. The core has no IntelliJ, ArchUnit, Node, or build-tool
-dependency. Evidence adapters own acquisition; the core owns validation, matching, coverage,
-cycle calculation, and the deterministic result contract.
+`CycleGovernanceEvaluator.evaluate`. Tools that provide an explicit baseline workflow can call
+`CycleDebtBaselinePlanner.propose` to obtain a pure proposal and diagnostics before owning consent
+and a revision-checked write. The core has no IntelliJ, ArchUnit, Node, or build-tool dependency.
+Evidence adapters own acquisition; the core owns validation, matching, coverage, cycle calculation,
+baseline proposal semantics, and deterministic result contracts.
 
 ## Deliberate boundaries
 
@@ -347,8 +363,9 @@ AtlasArc.io CI governs repository dependency cycles. It is not:
 - a hosted service or pull-request dashboard; or
 - a replacement for ArchUnit, ESLint, Sonar, or dependency-cruiser rules.
 
-Normal evaluation never edits `cycles.json` and does not read workspace-local Safe Havens. Only
-committed repository governance can affect a build verdict.
+Normal evaluation never edits `cycles.json` and does not read workspace-local Safe Havens. The
+separate `baseline --write` adoption command changes governance only after explicit intent; it is
+never run implicitly by evaluation. Only committed repository governance can affect a build verdict.
 
 ## Build and release
 

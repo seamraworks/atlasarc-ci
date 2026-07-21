@@ -10,6 +10,7 @@ Use these guides when you are ready to configure or operate the gate:
 |---|---|
 | [Configure the evaluator](evaluator-configuration.md) | You need to describe JVM or TypeScript evidence, module ownership, paths, freshness, output, or direct CLI invocation. |
 | [Govern cycle decisions](governance-decisions.md) | You need to create, review, understand, repair, or remove records in `.atlasarc/governance/cycles.json`. |
+| [Establish a cycle-debt baseline](cycle-debt-baseline.md) | You are adopting the gate in a repository with existing cycles and want to record the current backlog as exact Debt before new cycles start failing. |
 
 ## Machine contracts
 
@@ -27,5 +28,7 @@ multi-module regression fixture lives under
 Tools that provide another evidence source or governance workflow can depend on
 `io.atlasarc:atlasarc-governance-core`. The public entry points are
 `GovernanceEvidenceSnapshot`, `GovernanceEvaluationInput`, and
-`CycleGovernanceEvaluator.evaluate`. The core owns validation, matching, reference coverage, and
-the deterministic cycle verdict; adapters own evidence acquisition.
+`CycleGovernanceEvaluator.evaluate`. Baseline-capable tools can use `CycleDebtBaselinePlanner` to
+produce a pure, validated proposal before performing their own explicit revision-checked write. The
+core owns validation, matching, reference coverage, cycle calculation, and proposal semantics;
+adapters own evidence acquisition, consent, presentation, and filesystem orchestration.

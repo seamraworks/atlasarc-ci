@@ -60,6 +60,14 @@ sealed interface GovernanceWriteResult {
     data class IoError(val path: Path, val message: String) : GovernanceWriteResult
 }
 
+sealed interface GovernanceWriteCheckResult {
+    data class Ready(val path: Path) : GovernanceWriteCheckResult
+    data class MissingVcsRoot(val start: Path) : GovernanceWriteCheckResult
+    data class IgnoredPath(val path: Path, val rule: GovernanceIgnoreRule? = null) : GovernanceWriteCheckResult
+    data class IgnoreCheckUnavailable(val path: Path) : GovernanceWriteCheckResult
+    data class ReadOnly(val path: Path) : GovernanceWriteCheckResult
+}
+
 enum class GovernanceIgnoreStatus {
     IGNORED,
     NOT_IGNORED,
@@ -206,13 +214,12 @@ class CycleGovernanceRepository(
             is GovernanceEncodeResult.Success -> result.text.toByteArray(StandardCharsets.UTF_8)
             is GovernanceEncodeResult.Invalid -> return GovernanceWriteResult.InvalidDocument(result.issues)
         }
-        val root = rootLocator.nearest(start) ?: return GovernanceWriteResult.MissingVcsRoot(start)
-        val path = GovernancePaths.documentPath(root)
-        val ignore = ignoreProbe.check(root, CYCLE_GOVERNANCE_RELATIVE_PATH)
-        when (ignore.status) {
-            GovernanceIgnoreStatus.IGNORED -> return GovernanceWriteResult.IgnoredPath(path, ignore.rule)
-            GovernanceIgnoreStatus.UNAVAILABLE -> return GovernanceWriteResult.IgnoreCheckUnavailable(path)
-            GovernanceIgnoreStatus.NOT_IGNORED -> Unit
+        val path = when (val check = checkWrite(start)) {
+            is GovernanceWriteCheckResult.Ready -> check.path
+            is GovernanceWriteCheckResult.MissingVcsRoot -> return GovernanceWriteResult.MissingVcsRoot(check.start)
+            is GovernanceWriteCheckResult.IgnoredPath -> return GovernanceWriteResult.IgnoredPath(check.path, check.rule)
+            is GovernanceWriteCheckResult.IgnoreCheckUnavailable -> return GovernanceWriteResult.IgnoreCheckUnavailable(check.path)
+            is GovernanceWriteCheckResult.ReadOnly -> return GovernanceWriteResult.ReadOnly(check.path)
         }
 
         val actualRevision = currentRevision(path)
@@ -229,9 +236,7 @@ class CycleGovernanceRepository(
             if (existing.contentEquals(encoded)) return GovernanceWriteResult.NoChange(path, actualRevision)
         }
 
-        if (isReadOnly(path)) return GovernanceWriteResult.ReadOnly(path)
         val parent = path.parent
-        if (nearestExistingParent(parent)?.let(::isReadOnly) == true) return GovernanceWriteResult.ReadOnly(path)
 
         var temporary: Path? = null
         return try {
@@ -260,6 +265,23 @@ class CycleGovernanceRepository(
         } finally {
             temporary?.let { runCatching { Files.deleteIfExists(it) } }
         }
+    }
+
+    /** Checks whether a revision-guarded governance write can be attempted without mutating the repository. */
+    fun checkWrite(start: Path): GovernanceWriteCheckResult {
+        val root = rootLocator.nearest(start) ?: return GovernanceWriteCheckResult.MissingVcsRoot(start)
+        val path = GovernancePaths.documentPath(root)
+        val ignore = ignoreProbe.check(root, CYCLE_GOVERNANCE_RELATIVE_PATH)
+        when (ignore.status) {
+            GovernanceIgnoreStatus.IGNORED -> return GovernanceWriteCheckResult.IgnoredPath(path, ignore.rule)
+            GovernanceIgnoreStatus.UNAVAILABLE -> return GovernanceWriteCheckResult.IgnoreCheckUnavailable(path)
+            GovernanceIgnoreStatus.NOT_IGNORED -> Unit
+        }
+        if (isReadOnly(path)) return GovernanceWriteCheckResult.ReadOnly(path)
+        if (nearestExistingParent(path.parent)?.let(::isReadOnly) == true) {
+            return GovernanceWriteCheckResult.ReadOnly(path)
+        }
+        return GovernanceWriteCheckResult.Ready(path)
     }
 
     fun revision(path: Path): GovernanceRevision? = currentRevision(path)
