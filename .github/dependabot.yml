@@ -9,3 +9,24 @@ updates:
         dependency-type: production
       maven-development:
         dependency-type: development
+  - package-ecosystem: maven
+    directory: /examples/verified-governance/jvm-cycle
+    schedule:
+      interval: weekly
+    groups:
+      verified-java-example:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /examples/verified-governance/typescript-cycle
+    schedule:
+      interval: weekly
+    groups:
+      verified-typescript-example:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      verified-example-actions:
+        patterns: ["*"]

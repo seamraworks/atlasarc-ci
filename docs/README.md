@@ -11,6 +11,7 @@ Use these guides when you are ready to configure or operate the gate:
 | [Configure the evaluator](evaluator-configuration.md) | You need to describe JVM or TypeScript evidence, module ownership, paths, freshness, output, or direct CLI invocation. |
 | [Govern cycle decisions](governance-decisions.md) | You need to create, review, understand, repair, or remove records in `.atlasarc/governance/cycles.json`. |
 | [Establish a cycle-debt baseline](cycle-debt-baseline.md) | You are adopting the gate in a repository with existing cycles and want to record the current backlog as exact Debt before new cycles start failing. |
+| [Run the verified examples](../examples/verified-governance/README.md) | You want copyable Java and TypeScript projects that prove governed-pass and ungoverned-reject behavior in GitHub Actions and locally. |
 
 ## Machine contracts
 

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "schemaVersion": 1,
+  "records": {
+    "demo-orders-to-billing-debt": {
+      "analysisSource": {
+        "id": "jvm:whole-project",
+        "backend": "jvm-bytecode",
+        "language": "java"
+      },
+      "scope": "package",
+      "ownerSide": "source",
+      "source": {"architectureUnit": "demo.orders"},
+      "target": {"architectureUnit": "demo.billing"},
+      "referenceIds": [],
+      "kind": "DEBT",
+      "reason": "The existing order-to-billing dependency is tracked for removal.",
+      "ticket": "DEMO-1"
+    }
+  }
+}

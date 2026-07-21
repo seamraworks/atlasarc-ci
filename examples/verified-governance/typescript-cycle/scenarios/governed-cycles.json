@@ -1,0 +1,21 @@
+{
+  "$schema": "https://atlasarc.io/schemas/cycle-governance-v1.schema.json",
+  "schemaVersion": 1,
+  "records": {
+    "demo-orders-to-billing-debt": {
+      "analysisSource": {
+        "id": "typescript:demo",
+        "backend": "typescript-artifact",
+        "language": "typescript"
+      },
+      "scope": "source-folder",
+      "ownerSide": "source",
+      "source": {"architectureUnit": "src/orders"},
+      "target": {"architectureUnit": "src/billing"},
+      "referenceIds": [],
+      "kind": "DEBT",
+      "reason": "The existing orders-to-billing import is tracked for removal.",
+      "ticket": "DEMO-2"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "atlasarc-verified-typescript-cycle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "evidence": "depcruise src --no-config --include-only ^src --output-type json --output-to .atlasarc/depgraph.json"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "18.1.0",
+    "typescript": "6.0.3"
+  }
+}

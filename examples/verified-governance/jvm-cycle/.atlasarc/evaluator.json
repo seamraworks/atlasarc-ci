@@ -1,0 +1,13 @@
+{
+  "$schema": "https://atlasarc.io/schemas/evaluator-config-v1.schema.json",
+  "configVersion": 1,
+  "repositoryRoot": "..",
+  "sources": [
+    {
+      "id": "jvm:whole-project",
+      "backend": "jvm-bytecode",
+      "classDirectories": [{"path": "target/classes"}],
+      "sourceRoots": [{"path": "src/main/java"}]
+    }
+  ]
+}

@@ -66,10 +66,22 @@ contract and evaluator. It is not a separate end-user workflow.
   workflow, scopes, ownership, Intentional/Debt semantics, record health, and review practices.
 - [Establish a cycle-debt baseline](docs/cycle-debt-baseline.md) explains how to adopt the gate in a
   repository with existing cycles without broadly accepting future dependencies.
+- [Run the verified examples](examples/verified-governance/README.md) provides copyable Java and
+  TypeScript projects whose expected rejection and acceptance paths are checked on GitHub.
 - [Documentation index](docs/README.md) routes to the guides, schemas, examples, and extension API.
 
 The guides explain how to use the files. The bundled JSON schemas remain the exact machine
 contracts.
+
+## Run the verified examples
+
+[![Verified examples](https://github.com/seamraworks/atlasarc-ci/actions/workflows/verified-examples.yml/badge.svg)](https://github.com/seamraworks/atlasarc-ci/actions/workflows/verified-examples.yml)
+
+The [verified Java and TypeScript examples](examples/verified-governance/README.md) exercise the
+published integrations as users consume them. Six expected-outcome jobs prove that the standalone
+JVM evaluator, ArchUnit/JUnit adapter, and standalone TypeScript evaluator reject an ungoverned
+cycle and pass the same cycle after a reviewed repository decision. The jobs publish nothing and
+stay green only when rejection happens for the intended AtlasArc.io cycle reason.
 
 ## Install the standalone evaluator
 
