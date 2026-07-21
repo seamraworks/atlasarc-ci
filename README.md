@@ -73,10 +73,10 @@ contracts.
 
 ## Install the standalone evaluator
 
-AtlasArc.io CI `1.1.0` is published on Maven Central and requires JDK 21 or newer. Use the
-[standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.1.0/atlasarc-ci-1.1.0-standalone.jar)
+AtlasArc.io CI `1.2.0` is published on Maven Central and requires JDK 21 or newer. Use the
+[standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.2.0/atlasarc-ci-1.2.0-standalone.jar)
 directly, or download the
-[standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.1.0/atlasarc-ci-1.1.0-standalone.zip)
+[standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.2.0/atlasarc-ci-1.2.0-standalone.zip)
 for the executable, checksum, guides, schemas, examples, license, and notices.
 
 To build the same distribution from source:
@@ -121,7 +121,7 @@ Save this evaluator configuration as `.atlasarc/evaluator.json`:
 Compile the target project, then run:
 
 ```shell
-java -jar <path-to>/atlasarc-ci-1.1.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.2.0-standalone.jar evaluate \
   --config .atlasarc/evaluator.json \
   --format human
 ```
@@ -188,7 +188,7 @@ artifact:
 
 ```shell
 npx depcruise --output-type json src > .atlasarc/depgraph.json
-java -jar <path-to>/atlasarc-ci-1.1.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.2.0-standalone.jar evaluate \
   --backend typescript-artifact \
   --source-id typescript:frontend \
   --root . \
@@ -236,7 +236,7 @@ a new unaccepted cycle fails the test locally and in CI without requiring develo
 separate command.
 
 The ArchUnit/JUnit adapter is published on Maven Central as
-`io.atlasarc:atlasarc-archunit:1.1.0`.
+`io.atlasarc:atlasarc-archunit:1.2.0`.
 
 Maven:
 
@@ -244,7 +244,7 @@ Maven:
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-archunit</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <scope>test</scope>
 </dependency>
 <dependency>
@@ -258,7 +258,7 @@ Maven:
 Gradle:
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-archunit:1.1.0")
+testImplementation("io.atlasarc:atlasarc-archunit:1.2.0")
 testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
 ```
 
@@ -345,7 +345,7 @@ All artifacts use the `io.atlasarc` group, share one version, and are released t
 Adapters can depend only on the portable engine:
 
 ```kotlin
-implementation("io.atlasarc:atlasarc-governance-core:1.1.0")
+implementation("io.atlasarc:atlasarc-governance-core:1.2.0")
 ```
 
 Create a `GovernanceEvidenceSnapshot`, wrap it in `GovernanceEvaluationInput`, and call
