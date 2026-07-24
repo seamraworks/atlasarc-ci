@@ -6,7 +6,7 @@ current concrete references as reviewable `DEBT` in `.atlasarc/governance/cycles
 evaluation can then pass for the known backlog while a genuinely new ungoverned cycle still fails.
 
 This is an adoption step, not a second evaluation mode. The generated records use the ordinary
-governance schema and remain visible to AtlasArc for IntelliJ, the standalone evaluator, and the
+governance schema and remain visible to AtlasArc.io for IntelliJ, the standalone evaluator, and the
 ArchUnit/JUnit adapter.
 
 The command was introduced in AtlasArc.io CI 1.1.0. Narrow feedback-edge selection replaces the
@@ -61,7 +61,7 @@ Every generated record:
 - has `scope: "reference"` and covers exactly one current concrete dependency;
 - is classified as `DEBT`, never `INTENTIONAL`;
 - retains source and target module identity when the evidence is module-qualified; and
-- uses the standard reason `Established as existing cycle debt by the AtlasArc CI baseline.`
+- uses the standard reason `Established as existing cycle debt by the AtlasArc.io CI baseline.`
 
 AtlasArc does not accept every edge in a strongly connected component. For components of up to 18
 architecture units, it computes an exact feedback-edge set: minimize selected unit edges first,
@@ -99,7 +99,7 @@ components. A new dependency—including a new reference parallel to a selected 
 uncovered and fails when it participates in a new ungoverned problem cycle. A new dependency that
 does not form such a cycle is not a cycle-governance violation.
 
-Use AtlasArc for IntelliJ's **Cycle Governance** dialog to establish the same baseline visually from
+Use AtlasArc.io for IntelliJ's **Cycle Governance** dialog to establish the same baseline visually from
 a fresh whole-project analysis. The governance hub distinguishes current problem cycles, selected
 cycle-breaking edges, and exact debt records before writing, then supports normal review,
 reclassification, repair, and removal.

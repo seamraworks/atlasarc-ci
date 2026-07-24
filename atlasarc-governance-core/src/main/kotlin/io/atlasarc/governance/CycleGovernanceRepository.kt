@@ -341,7 +341,7 @@ object AtlasArcIgnoreFile {
 # sources.json, evaluator.json, and governance/ are repository configuration and remain committable.
 """
 
-    const val ROOT_TRACKED_CONFIGURATION: String = """# Keep AtlasArc.io repository configuration visible to Git
+    const val ROOT_TRACKED_CONFIGURATION: String = """# Keep AtlasArc repository configuration visible to Git
 !/.atlasarc/
 /.atlasarc/*
 !/.atlasarc/sources.json

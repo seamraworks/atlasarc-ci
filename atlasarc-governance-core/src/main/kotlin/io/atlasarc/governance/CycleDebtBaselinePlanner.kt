@@ -9,7 +9,7 @@ import java.security.MessageDigest
 import io.atlasarc.scope.RepositoryScopeEvaluationContext
 
 const val DEFAULT_CYCLE_DEBT_BASELINE_REASON: String =
-    "Established as existing cycle debt by the AtlasArc CI baseline."
+    "Established as existing cycle debt by the AtlasArc.io CI baseline."
 
 data class CycleDebtBaselineOptions(
     val reason: String = DEFAULT_CYCLE_DEBT_BASELINE_REASON,
