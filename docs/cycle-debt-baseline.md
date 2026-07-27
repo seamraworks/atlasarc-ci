@@ -99,10 +99,12 @@ components. A new dependency—including a new reference parallel to a selected 
 uncovered and fails when it participates in a new ungoverned problem cycle. A new dependency that
 does not form such a cycle is not a cycle-governance violation.
 
-Use AtlasArc.io for IntelliJ's **Cycle Governance** dialog to establish the same baseline visually from
-a fresh whole-project analysis. The governance hub distinguishes current problem cycles, selected
-cycle-breaking edges, and exact debt records before writing, then supports normal review,
-reclassification, repair, and removal.
+Use AtlasArc.io for IntelliJ's **Cycle Governance** dialog to establish the same baseline visually
+from a current, stable Analysis Source with exact-reference evidence. That can be a selected JVM
+module, the whole JVM project, or a configured TypeScript source. The proposal covers the graph
+loaded from that source, leaves records from other sources untouched and not evaluated, and
+distinguishes current problem cycles, selected cycle-breaking edges, and exact debt records before
+writing. The governance hub then supports normal review, reclassification, repair, and removal.
 
 ## When AtlasArc refuses
 
