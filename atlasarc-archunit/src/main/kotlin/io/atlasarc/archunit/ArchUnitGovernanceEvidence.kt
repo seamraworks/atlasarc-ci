@@ -117,7 +117,9 @@ class ArchUnitGovernanceEvidence {
                 nodes = nodes.distinct().sortedBy(::nodeKey),
                 references = references,
                 caseSensitive = !System.getProperty("os.name").startsWith("Windows", ignoreCase = true),
-                evaluationComplete = attributionIssues.isEmpty(),
+                // ArchUnit supplies the complete configured JVM universe, but it cannot evaluate
+                // governance records owned by another acquisition backend, such as TypeScript.
+                evaluationComplete = false,
             ),
             issues = attributionIssues,
         )

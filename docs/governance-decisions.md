@@ -11,6 +11,13 @@ The file belongs in version control. A governance change should be reviewed with
 reasoning that justify it, and the same committed file is consumed by AtlasArc.io for IntelliJ, the
 standalone evaluator, and the ArchUnit/JUnit adapter.
 
+The consumers evaluate only the evidence they actually acquire. In a mixed repository, an
+ArchUnit/JUnit rule evaluates its imported Java/Kotlin evidence and leaves valid TypeScript records
+in the same file `not-in-analysis`. That neutral status does not fail the JVM test. Covered JVM
+records still fail closed when their evidence is missing, ambiguous, stale, or unsupported, and a
+malformed governance document is invalid for every consumer. Configure both backends in the
+standalone evaluator when one run must cover the complete mixed stack.
+
 ## The decision workflow
 
 1. Build or analyze current repository evidence.

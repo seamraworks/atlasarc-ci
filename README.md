@@ -255,6 +255,12 @@ The ArchUnit adapter places the evaluator in the normal JVM test lifecycle. Acce
 a new unaccepted cycle fails the test locally and in CI without requiring developers to remember a
 separate command.
 
+One shared `cycles.json` may contain both JVM and TypeScript decisions. The ArchUnit rule evaluates
+the Java/Kotlin records covered by its imported classes and leaves valid TypeScript records
+`not-in-analysis`; those records do not fail the JUnit test. A malformed governance document or an
+invalid record in the covered JVM evidence still fails closed. Use the standalone evaluator with
+both evidence sources when the build needs one complete mixed-stack verdict.
+
 The ArchUnit/JUnit adapter is published on Maven Central as
 `io.atlasarc:atlasarc-archunit:1.3.0`.
 

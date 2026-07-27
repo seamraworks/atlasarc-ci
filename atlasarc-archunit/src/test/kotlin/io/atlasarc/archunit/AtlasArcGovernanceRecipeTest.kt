@@ -2,6 +2,8 @@ package io.atlasarc.archunit
 
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices
+import io.atlasarc.evaluation.CycleGovernanceEvaluator
+import io.atlasarc.evaluation.GovernanceEvaluationVerdict
 import io.atlasarc.governance.CycleGovernanceCodec
 import io.atlasarc.governance.CycleGovernanceDocument
 import io.atlasarc.governance.CycleGovernanceKind
@@ -13,6 +15,7 @@ import io.atlasarc.governance.GovernanceIdentity
 import io.atlasarc.governance.GovernanceLanguage
 import io.atlasarc.governance.GovernanceOwnerSide
 import io.atlasarc.governance.GovernancePaths
+import io.atlasarc.governance.GovernanceRecordStatus
 import io.atlasarc.governance.GovernanceScope
 import io.atlasarc.scope.RepositoryScopeCodec
 import io.atlasarc.scope.RepositoryScopeDocument
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 /** Executable proof for the public repository-backed ArchUnit recipe. */
@@ -57,13 +61,79 @@ class AtlasArcGovernanceRecipeTest {
     }
 
     @Test
+    fun `the ArchUnit recipe ignores valid TypeScript records while evaluating JVM governance`() {
+        val document = governanceDocument(
+            "accepted-typescript-cycle" to typeScriptRecord(),
+        )
+        val repository = repositoryWithGovernance(document)
+        val evidence = ArchUnitGovernanceEvidence().build(
+            classes = governedClasses,
+            sourceRoots = listOf(JvmEvidenceRoot(Path.of("src/test/java").toAbsolutePath(), "test")),
+            analysisSourceId = "jvm:whole-project",
+            repositoryRoot = repository,
+        )
+
+        val evaluation = CycleGovernanceEvaluator().evaluate(document, listOf(evidence), "test")
+
+        assertEquals(GovernanceEvaluationVerdict.CLEAN, evaluation.verdict)
+        assertEquals(2, evaluation.summary.recordCount)
+        assertEquals(1, evaluation.summary.activeRecordCount)
+        assertEquals(0, evaluation.summary.invalidRecordCount)
+        assertEquals(
+            GovernanceRecordStatus.NOT_IN_ANALYSIS,
+            evaluation.records.single { it.recordId == "accepted-typescript-cycle" }.status,
+        )
+        assertDoesNotThrow { recipeRule(repository).check(governedClasses) }
+    }
+
+    @Test
     fun `the recipe rule still fails for a new ungoverned cycle`() {
-        val repository = repositoryWithGovernance()
+        val repository = repositoryWithGovernance(
+            governanceDocument("accepted-typescript-cycle" to typeScriptRecord()),
+        )
 
         assertTrue(
             recipeRule(repository).evaluate(allRecipeClasses).hasViolation(),
             "an ungoverned cycle must still fail; the repository-backed rule must not fail open",
         )
+    }
+
+    @Test
+    fun `the recipe still fails closed when the shared governance document is malformed`() {
+        val repository = repositoryWithGovernance()
+        Files.writeString(GovernancePaths.documentPath(repository), "{}")
+
+        val result = recipeRule(repository).evaluate(governedClasses)
+
+        assertTrue(result.hasViolation())
+        assertTrue(result.failureReport.details.any { it.contains("governance is invalid") })
+    }
+
+    @Test
+    fun `the recipe still rejects invalid JVM records in a mixed backend document`() {
+        val repository = repositoryWithGovernance(
+            governanceDocument(
+                "accepted-typescript-cycle" to typeScriptRecord(),
+                "missing-jvm-cycle" to CycleGovernanceRecord(
+                    analysisSource = GovernanceAnalysisSource(
+                        id = "jvm:whole-project",
+                        backend = GovernanceBackend.JVM_BYTECODE,
+                        language = GovernanceLanguage.JAVA,
+                    ),
+                    scope = GovernanceScope.PACKAGE,
+                    ownerSide = GovernanceOwnerSide.SOURCE,
+                    source = GovernanceIdentity("missing.source"),
+                    target = GovernanceIdentity("missing.target"),
+                    kind = CycleGovernanceKind.INTENTIONAL,
+                    reason = "A covered-backend record must still be validated.",
+                ),
+            ),
+        )
+
+        val result = recipeRule(repository).evaluate(governedClasses)
+
+        assertTrue(result.hasViolation())
+        assertTrue(result.failureReport.details.any { it.contains("source identity no longer exists") })
     }
 
     @Test
@@ -168,12 +238,23 @@ class AtlasArcGovernanceRecipeTest {
         .withModuleSourceRoot("test", Path.of("src/test/java").toAbsolutePath())
         .build()
 
-    private fun repositoryWithGovernance(): Path {
+    private fun repositoryWithGovernance(document: CycleGovernanceDocument = governanceDocument()): Path {
         val root = Files.createDirectories(temp.resolve("repository"))
         Files.createDirectories(root.resolve(".git"))
-        val document = CycleGovernanceDocument(
-            records = mapOf(
-                "accepted-billing-orders" to CycleGovernanceRecord(
+        val encoded = CycleGovernanceCodec().encode(document) as GovernanceEncodeResult.Success
+        val path = GovernancePaths.documentPath(root)
+        Files.createDirectories(path.parent)
+        Files.writeString(path, encoded.text)
+        return root
+    }
+
+    private fun governanceDocument(
+        vararg additionalRecords: Pair<String, CycleGovernanceRecord>,
+    ): CycleGovernanceDocument = CycleGovernanceDocument(
+        records = buildMap {
+            put(
+                "accepted-billing-orders",
+                CycleGovernanceRecord(
                     analysisSource = GovernanceAnalysisSource(
                         id = "jvm:whole-project",
                         backend = GovernanceBackend.JVM_BYTECODE,
@@ -186,14 +267,24 @@ class AtlasArcGovernanceRecipeTest {
                     kind = CycleGovernanceKind.INTENTIONAL,
                     reason = "The fixture deliberately proves the governed ArchUnit recipe.",
                 ),
-            ),
-        )
-        val encoded = CycleGovernanceCodec().encode(document) as GovernanceEncodeResult.Success
-        val path = GovernancePaths.documentPath(root)
-        Files.createDirectories(path.parent)
-        Files.writeString(path, encoded.text)
-        return root
-    }
+            )
+            putAll(additionalRecords)
+        },
+    )
+
+    private fun typeScriptRecord(): CycleGovernanceRecord = CycleGovernanceRecord(
+        analysisSource = GovernanceAnalysisSource(
+            id = "ts:manifest:web",
+            backend = GovernanceBackend.TYPESCRIPT_ARTIFACT,
+            language = GovernanceLanguage.TYPESCRIPT,
+        ),
+        scope = GovernanceScope.SOURCE_FOLDER,
+        ownerSide = GovernanceOwnerSide.SOURCE,
+        source = GovernanceIdentity("apps/web/src/billing"),
+        target = GovernanceIdentity("apps/web/src/orders"),
+        kind = CycleGovernanceKind.INTENTIONAL,
+        reason = "A valid TypeScript record belongs to the standalone evaluator, not ArchUnit.",
+    )
 
     private companion object {
         const val FIXTURES = "io.atlasarc.archunit.fixtures"
