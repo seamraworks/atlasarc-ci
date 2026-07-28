@@ -81,6 +81,31 @@ class CycleGovernanceContractTest {
     }
 
     @Test
+    fun `greenfield JVM member records require an erased descriptor`() {
+        val record = CycleGovernanceRecord(
+            analysisSource = GovernanceAnalysisSource(
+                "jvm:whole-project",
+                GovernanceBackend.JVM_BYTECODE,
+                GovernanceLanguage.JAVA,
+            ),
+            scope = GovernanceScope.MEMBER,
+            ownerSide = GovernanceOwnerSide.SOURCE,
+            source = GovernanceIdentity(
+                architectureUnit = "billing",
+                type = "billing.InvoiceService",
+                member = GovernanceMemberIdentity("load"),
+            ),
+            target = GovernanceIdentity("orders"),
+            kind = CycleGovernanceKind.INTENTIONAL,
+            reason = "A name alone must never select every overload.",
+        )
+
+        val issues = CycleGovernanceValidator().validateRecord("name-only-member", record)
+
+        assertTrue(issues.any { it.code == "missing-member-descriptor" })
+    }
+
+    @Test
     fun `path normalization is portable conservative and unicode preserving`() {
         assertEquals("apps/Admin Portal/src/Résumé.ts", GovernancePaths.normalizeRepositoryRelative("apps\\Admin Portal\\src\\Résumé.ts"))
         assertEquals("a/b", GovernancePaths.normalizeRepositoryRelative("a/./b"))

@@ -148,7 +148,7 @@
     "member": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": ["name", "descriptor"],
       "properties": {
         "name": {
           "type": "string",

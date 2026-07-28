@@ -1,5 +1,6 @@
 package io.atlasarc.archunit.internal
 
+import com.tngtech.archunit.core.domain.AccessTarget
 import com.tngtech.archunit.core.domain.Dependency
 import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.core.domain.JavaCodeUnit
@@ -254,9 +255,43 @@ private fun com.tngtech.archunit.core.domain.AccessTarget.toMemberRefOrNull(): M
         MemberRef(
             ownerClass  = owner.name,
             name        = name,
-            descriptor  = null,  // AccessTarget does not expose descriptor in ArchUnit 1.4.2
+            descriptor  = exactJvmDescriptor(),
         )
     }.getOrNull()
+
+/**
+ * Access targets retain the erased bytecode signature even when their declaration is outside the
+ * imported class set. Prefer a resolved member, then reconstruct the same descriptor from the
+ * target's raw erased types.
+ */
+private fun AccessTarget.exactJvmDescriptor(): String? =
+    resolveMember().orElse(null)?.let { runCatching { it.descriptor }.getOrNull() }
+        ?: when (this) {
+            is AccessTarget.CodeUnitAccessTarget -> buildString {
+                append('(')
+                rawParameterTypes.forEach { append(it.jvmDescriptor()) }
+                append(')')
+                append(rawReturnType.jvmDescriptor())
+            }
+            is AccessTarget.FieldAccessTarget -> rawType.jvmDescriptor()
+            else -> null
+        }
+
+private fun JavaClass.jvmDescriptor(): String {
+    if (isArray) return "[${componentType.jvmDescriptor()}"
+    return when (name) {
+        "void" -> "V"
+        "boolean" -> "Z"
+        "byte" -> "B"
+        "char" -> "C"
+        "short" -> "S"
+        "int" -> "I"
+        "long" -> "J"
+        "float" -> "F"
+        "double" -> "D"
+        else -> "L${name.replace('.', '/')};"
+    }
+}
 
 private fun String.hasSupportedSignatureDependencyOrigin(): Boolean =
     endsWith(".java", ignoreCase = true) || endsWith(".kt", ignoreCase = true)

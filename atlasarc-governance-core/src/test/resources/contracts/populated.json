@@ -101,7 +101,8 @@
         "type": "org.example.café.RésuméService",
         "sourceFile": "src/main/kotlin/org/example/café/RésuméService.kt",
         "member": {
-          "name": "load résumé"
+          "name": "load résumé",
+          "descriptor": "()V"
         }
       },
       "target": {

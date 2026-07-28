@@ -29,6 +29,9 @@ data class GovernanceEvidenceReference(
     val source: GovernanceIdentity,
     val target: GovernanceIdentity,
     val dependencyKind: GovernanceDependencyKind? = null,
+    /** Exact evidence can exist without mapping to a human-selectable source declaration. */
+    val sourceMemberGovernanceEligible: Boolean = !source.member?.descriptor.isNullOrBlank(),
+    val targetMemberGovernanceEligible: Boolean = !target.member?.descriptor.isNullOrBlank(),
 )
 
 data class GovernanceEvidenceSnapshot(
@@ -451,9 +454,6 @@ class CycleGovernanceMatcher(
         if (!isNarrowed || nodes.map { identityKey(it.identity, caseSensitive) }.distinct().size <= 1) return null
 
         val repair = when {
-            selector.member != null && selector.member.descriptor == null &&
-                nodes.mapNotNull { it.identity.member?.descriptor }.distinct().size > 1 ->
-                "Add the JVM member descriptor to select one overload."
             selector.type == null && nodes.mapNotNull { it.identity.type }.distinct().size > 1 ->
                 "Add the owner-side type to select one declaration."
             selector.sourceFile == null && nodes.mapNotNull { it.identity.sourceFile }.distinct().size > 1 ->

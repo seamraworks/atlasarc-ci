@@ -36,7 +36,7 @@ internal data class RichDependencyRecord(
 internal data class MemberRef(
     val ownerClass: String,
     val name: String,
-    /** JVM descriptor string, e.g. "(Ljava/lang/String;)V". Null for fields. */
+    /** Erased JVM descriptor, including field descriptors such as "Ljava/lang/String;". */
     val descriptor: String?,
 )
 

@@ -26,6 +26,7 @@ import io.atlasarc.scope.RepositoryScopeSelector
 import io.atlasarc.scope.RepositoryScopeSelectorKind
 import io.atlasarc.scope.REPOSITORY_SCOPE_RELATIVE_PATH
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -85,6 +86,32 @@ class AtlasArcGovernanceRecipeTest {
             ),
             tuples,
         )
+    }
+
+    @Test
+    fun `overloaded constructors methods and fields retain exact JVM descriptors`() {
+        val classes = ClassFileImporter().importPackages(OVERLOAD_FIXTURES)
+        val evidence = ArchUnitGovernanceEvidence().build(
+            classes = classes,
+            sourceRoots = listOf(JvmEvidenceRoot(Path.of("src/test/java").toAbsolutePath(), "test")),
+            analysisSourceId = "jvm:whole-project",
+            repositoryRoot = temp,
+        ).evidence
+        val targetType = "$OVERLOAD_FIXTURES.right.OverloadedTarget"
+        val references = evidence.references.filter { it.target.type == targetType }
+
+        val constructors = references.filter { it.target.member?.name == "<init>" }
+        val methods = references.filter { it.target.member?.name == "load" }
+        val fields = references.filter { it.target.member?.name == "value" }
+
+        assertEquals(setOf("(I)V", "(Ljava/lang/String;)V"), constructors.map { it.target.member?.descriptor }.toSet())
+        assertEquals(
+            setOf("(I)Ljava/lang/String;", "(Ljava/lang/String;)Ljava/lang/String;"),
+            methods.map { it.target.member?.descriptor }.toSet(),
+        )
+        assertEquals(setOf("I"), fields.map { it.target.member?.descriptor }.toSet())
+        assertEquals(constructors.size, constructors.map { it.id }.distinct().size)
+        assertEquals(methods.size, methods.map { it.id }.distinct().size)
     }
 
     @Test
@@ -239,6 +266,17 @@ class AtlasArcGovernanceRecipeTest {
         Files.createDirectories(path.parent)
         Files.writeString(path, encoded.text)
         val classes = ClassFileImporter().importPackages(KOTLIN_FIXTURES)
+        val evidence = ArchUnitGovernanceEvidence().build(
+            classes = classes,
+            sourceRoots = listOf(JvmEvidenceRoot(Path.of("src/test/kotlin").toAbsolutePath(), "test")),
+            analysisSourceId = "jvm:whole-project",
+            repositoryRoot = root,
+        ).evidence
+        val defaultHelper = evidence.references.firstOrNull {
+            it.target.member?.name == "touch\$default"
+        }
+        assertNotNull(defaultHelper, "Kotlin default-argument helpers remain exact evidence")
+        assertTrue(defaultHelper!!.target.member?.descriptor?.isNotBlank() == true)
         val rule = AtlasArcGovernanceRules.governedCycles()
             .fromRepository(root)
             .forAnalysisSource("jvm:whole-project")
@@ -317,5 +355,6 @@ class AtlasArcGovernanceRecipeTest {
         const val FIXTURES = "io.atlasarc.archunit.fixtures"
         const val GOVERNED = "$FIXTURES.governed"
         const val KOTLIN_FIXTURES = "$FIXTURES.kotlin"
+        const val OVERLOAD_FIXTURES = "$FIXTURES.overloads"
     }
 }

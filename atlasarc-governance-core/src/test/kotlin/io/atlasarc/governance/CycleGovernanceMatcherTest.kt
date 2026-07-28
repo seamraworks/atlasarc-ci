@@ -405,27 +405,31 @@ class CycleGovernanceMatcherTest {
             target = firstTarget,
             dependencyKind = GovernanceDependencyKind.METHOD_CALL,
         )
-        val ambiguous = exact.copy(target = identity("b", "b.Target", member = GovernanceMemberIdentity("load")))
+        val nameOnly = exact.copy(target = identity("b", "b.Target", member = GovernanceMemberIdentity("load")))
 
         val result = matcher.match(
-            document("exact-overload" to exact, "name-only" to ambiguous),
+            document("exact-overload" to exact, "name-only" to nameOnly),
             snapshot(jvmSource(), references),
         )
 
         assertEquals(GovernanceRecordStatus.ACTIVE, result.records.getValue("exact-overload").status)
         assertEquals(listOf("r-int"), result.records.getValue("exact-overload").matchedReferenceIds)
-        val ambiguousMatch = result.records.getValue("name-only")
-        assertEquals(GovernanceRecordStatus.AMBIGUOUS, ambiguousMatch.status)
-        assertTrue(ambiguousMatch.diagnostics.single().contains("Add the JVM member descriptor"))
+        val nameOnlyMatch = result.records.getValue("name-only")
+        assertEquals(GovernanceRecordStatus.INVALID, nameOnlyMatch.status)
+        assertTrue(nameOnlyMatch.diagnostics.single().startsWith("missing-member-descriptor:"))
     }
 
     @Test
     fun `Kotlin package constructor property and function scopes match concrete evidence`() {
-        val members = listOf("<init>", "getValue", "calculate")
+        val members = listOf(
+            GovernanceMemberIdentity("<init>", "()V"),
+            GovernanceMemberIdentity("getValue", "()Ljava/lang/String;"),
+            GovernanceMemberIdentity("calculate", "()I"),
+        )
         val references = members.map { member ->
             ref(
-                id = "k-$member",
-                source = identity("k.source", "k.source.Owner", member = GovernanceMemberIdentity(member)),
+                id = "k-${member.name}",
+                source = identity("k.source", "k.source.Owner", member = member),
                 target = identity("k.target", "k.target.Target"),
                 sourceLanguage = GovernanceLanguage.KOTLIN,
                 targetLanguage = GovernanceLanguage.KOTLIN,
@@ -443,7 +447,7 @@ class CycleGovernanceMatcherTest {
                 language = GovernanceLanguage.KOTLIN,
                 scope = GovernanceScope.MEMBER,
                 ownerSide = GovernanceOwnerSide.SOURCE,
-                source = identity("k.source", "k.source.Owner", member = GovernanceMemberIdentity(member)),
+                source = identity("k.source", "k.source.Owner", member = member),
                 target = identity("k.target"),
             )
         }
@@ -455,7 +459,7 @@ class CycleGovernanceMatcherTest {
 
         assertTrue(result.records.values.all { it.status == GovernanceRecordStatus.ACTIVE })
         members.forEachIndexed { index, member ->
-            assertTrue("kotlin-member-$index" in result.coverage.getValue("k-$member").recordIds)
+            assertTrue("kotlin-member-$index" in result.coverage.getValue("k-${member.name}").recordIds)
         }
     }
 
@@ -515,7 +519,10 @@ class CycleGovernanceMatcherTest {
             "missing-target" to base.copy(target = identity("gone", "gone.Target")),
             "resolved-edge" to base.copy(target = identity("c", "c.C")),
             "partial-reference" to base.copy(scope = GovernanceScope.REFERENCE, referenceIds = setOf("r-one", "r-two")),
-            "unsupported-scope" to base.copy(scope = GovernanceScope.MEMBER, source = identity("a", "a.A", member = GovernanceMemberIdentity("run"))),
+            "unsupported-scope" to base.copy(
+                scope = GovernanceScope.MEMBER,
+                source = identity("a", "a.A", member = GovernanceMemberIdentity("run", "()V")),
+            ),
             "invalid-reason" to base.copy(reason = ""),
         )
         val sourceWithoutMember = jvmSource(scopes = setOf(GovernanceScope.PACKAGE, GovernanceScope.TYPE, GovernanceScope.REFERENCE))

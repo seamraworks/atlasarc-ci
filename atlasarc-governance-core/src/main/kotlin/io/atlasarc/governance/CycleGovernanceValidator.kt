@@ -107,6 +107,15 @@ class CycleGovernanceValidator {
         if (record.scope !in JVM_SCOPES) {
             add("unsupported-scope", "scope", "JVM bytecode does not support ${record.scope} governance.")
         }
+        listOf("source" to record.source, "target" to record.target).forEach { (field, identity) ->
+            if (identity.member != null && identity.member.descriptor.isNullOrBlank()) {
+                add(
+                    "missing-member-descriptor",
+                    "$field.member.descriptor",
+                    "Every JVM member identity requires an exact erased descriptor so overloaded members cannot collide.",
+                )
+            }
+        }
         if (record.scope == GovernanceScope.TYPE && owner(record).type == null) {
             add("missing-owner-type", ownerField(record, "type"), "Type scope requires the owner-side type identity.")
         }
