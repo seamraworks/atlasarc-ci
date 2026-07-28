@@ -6,4 +6,8 @@ public class OrderService {
     public Invoice invoice() {
         return new Invoice();
     }
+
+    public OrderService roundTrip() {
+        return new Invoice().orders();
+    }
 }

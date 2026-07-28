@@ -2,7 +2,6 @@ package io.atlasarc.archunit
 
 import com.tngtech.archunit.core.domain.JavaClasses
 import io.atlasarc.archunit.internal.CompiledClassOwnershipIndex
-import io.atlasarc.archunit.internal.ExampleIdentity
 import io.atlasarc.archunit.internal.JvmModuleRef
 import io.atlasarc.archunit.internal.ModuleClassRoot
 import io.atlasarc.archunit.internal.RichDependencyExtractor
@@ -125,6 +124,10 @@ class ArchUnitGovernanceEvidence {
         )
     }
 
+    /**
+     * Projects each correlated acquisition tuple directly. Source location and confidence remain
+     * acquisition diagnostics; the portable ID is deliberately semantic and line-independent.
+     */
     private fun toReferences(
         records: List<RichDependencyRecord>,
         sourceIndex: SourceIndex,
@@ -132,68 +135,45 @@ class ArchUnitGovernanceEvidence {
         repositoryRoot: Path,
     ): List<GovernanceEvidenceReference> = records
         .filter { it.originPackage.isNotBlank() && it.targetPackage.isNotBlank() }
-        .groupBy { record ->
-            ExampleIdentity(
-                sourceFile = record.sourceFilePath.ifBlank { record.sourceFileName.orEmpty() },
-                sourceClass = record.originClass,
-                sourceModuleRef = record.originModuleRef,
-                targetClass = record.targetClass,
-                targetModuleRef = record.targetModuleRef,
-                line = record.line,
+        .map { record ->
+            val sourceLanguage = languageOf(record.sourceFilePath.ifBlank { record.sourceFileName.orEmpty() })
+            val targetLanguage = languageOf(record.targetSourceFilePath.orEmpty())
+            val source = GovernanceIdentity(
+                architectureUnit = record.originPackage,
+                type = record.originClass,
+                sourceFile = repositoryPath(
+                    record.sourceFilePath.ifBlank { record.sourceFileName.orEmpty() },
+                    repositoryRoot,
+                ),
+                member = record.originMember?.let { GovernanceMemberIdentity(it.name, it.descriptor) },
+                module = record.originModuleRef.stableName,
             )
-        }
-        .values
-        .flatMap { collapsed ->
-            val first = collapsed.first()
-            val sourceLanguage = languageOf(first.sourceFilePath.ifBlank { first.sourceFileName.orEmpty() })
-            val targetLanguage = languageOf(first.targetSourceFilePath.orEmpty())
-            val sourceFile = repositoryPath(first.sourceFilePath.ifBlank { first.sourceFileName.orEmpty() }, repositoryRoot)
-            val targetFile = first.targetSourceFilePath?.let { repositoryPath(it, repositoryRoot) }
-            val origins = collapsed.mapNotNullTo(linkedSetOf()) { it.originMember?.let { member ->
-                GovernanceMemberIdentity(member.name, member.descriptor)
-            } }.takeIf(Set<GovernanceMemberIdentity>::isNotEmpty)?.toList() ?: listOf(null)
-            val targets = collapsed.mapNotNullTo(linkedSetOf()) { it.targetMember?.let { member ->
-                GovernanceMemberIdentity(member.name, member.descriptor)
-            } }.takeIf(Set<GovernanceMemberIdentity>::isNotEmpty)?.toList() ?: listOf(null)
-            val kinds = collapsed.mapTo(linkedSetOf()) { it.kind.toGovernanceKind() }.toList()
-            origins.flatMap { originMember ->
-                targets.flatMap { targetMember ->
-                    kinds.map { kind ->
-                        val source = GovernanceIdentity(
-                            architectureUnit = first.originPackage,
-                            type = first.originClass,
-                            sourceFile = sourceFile,
-                            member = originMember,
-                            module = first.originModuleRef.stableName,
-                        )
-                        val target = GovernanceIdentity(
-                            architectureUnit = first.targetPackage,
-                            type = first.targetClass,
-                            sourceFile = targetFile,
-                            member = targetMember,
-                            module = first.targetModuleRef.stableName,
-                        )
-                        GovernanceEvidenceReference(
-                            id = GovernanceIds.referenceId(
-                                analysisSourceId,
-                                GovernanceBackend.JVM_BYTECODE,
-                                sourceLanguage,
-                                targetLanguage,
-                                source,
-                                target,
-                                kind,
-                            ),
-                            analysisSourceId = analysisSourceId,
-                            backend = GovernanceBackend.JVM_BYTECODE,
-                            sourceLanguage = sourceLanguage,
-                            targetLanguage = targetLanguage,
-                            source = source,
-                            target = target,
-                            dependencyKind = kind,
-                        )
-                    }
-                }
-            }
+            val target = GovernanceIdentity(
+                architectureUnit = record.targetPackage,
+                type = record.targetClass,
+                sourceFile = record.targetSourceFilePath?.let { repositoryPath(it, repositoryRoot) },
+                member = record.targetMember?.let { GovernanceMemberIdentity(it.name, it.descriptor) },
+                module = record.targetModuleRef.stableName,
+            )
+            val kind = record.kind.toGovernanceKind()
+            GovernanceEvidenceReference(
+                id = GovernanceIds.referenceId(
+                    analysisSourceId,
+                    GovernanceBackend.JVM_BYTECODE,
+                    sourceLanguage,
+                    targetLanguage,
+                    source,
+                    target,
+                    kind,
+                ),
+                analysisSourceId = analysisSourceId,
+                backend = GovernanceBackend.JVM_BYTECODE,
+                sourceLanguage = sourceLanguage,
+                targetLanguage = targetLanguage,
+                source = source,
+                target = target,
+                dependencyKind = kind,
+            )
         }
         .distinctBy(GovernanceEvidenceReference::id)
         .sortedBy(GovernanceEvidenceReference::id)

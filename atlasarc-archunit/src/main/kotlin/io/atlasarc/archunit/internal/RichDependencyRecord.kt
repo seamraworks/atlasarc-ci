@@ -1,9 +1,9 @@
 package io.atlasarc.archunit.internal
 
 /**
- * Internal model for a single dependency relationship between two classes,
- * richer than the final portable evidence reference to support stable member-level identities and precise
- * deduplication before projection to the raw domain model.
+ * Canonical acquisition tuple for one dependency relationship between two classes. It retains
+ * source location and attribution confidence while the portable governance projection deliberately
+ * derives a line-independent semantic identity.
  */
 internal data class RichDependencyRecord(
     val originClass: String,
@@ -26,6 +26,8 @@ internal data class RichDependencyRecord(
     val targetSourceFilePath: String? = null,
     /** Named, legitimately module-less, or failed/ambiguous ownership of the target class. */
     val targetModuleRef: JvmModuleRef = JvmModuleRef.Unattributed,
+    /** Whether acquisition observed this tuple directly or inferred it from surrounding bytecode. */
+    val attributionConfidence: DependencyAttributionConfidence = DependencyAttributionConfidence.OBSERVED,
 ) {
     val originModule: String? get() = originModuleRef.stableName
     val targetModule: String? get() = targetModuleRef.stableName
@@ -46,37 +48,7 @@ internal enum class DependencyKind {
     STRUCTURAL,
 }
 
-/**
- * Deduplication key for [RichDependencyRecord]s.
- *
- * Two records with the same identity are collapsed into one.
- */
-internal data class RichDependencyIdentity(
-    val originClass: String,
-    val originModuleRef: JvmModuleRef,
-    val originMember: MemberRef?,
-    val targetClass: String,
-    val targetModuleRef: JvmModuleRef,
-    val targetMember: MemberRef?,
-    val kind: DependencyKind,
-    val line: Int?,
-)
-
-/**
- * Projection key used to collapse equivalent [RichDependencyRecord] values before portable mapping.
- *
- * Intentionally **member-blind**: an access record (e.g. a method call, member=`foo`) and the
- * structural "shadow" records the structural pass emits for the same reference (member=null) share
- * one identity and collapse into a single example — otherwise a single call would be counted
- * multiple times. The distinct member *names* that collapse into an example are preserved on
- * the portable evidence so the evaluator can still apply per-reference repository governance with
- * red-wins across them.
- */
-internal data class ExampleIdentity(
-    val sourceFile: String,
-    val sourceClass: String?,
-    val sourceModuleRef: JvmModuleRef,
-    val targetClass: String,
-    val targetModuleRef: JvmModuleRef,
-    val line: Int?,
-)
+internal enum class DependencyAttributionConfidence {
+    OBSERVED,
+    INFERRED,
+}

@@ -10,6 +10,7 @@ import io.atlasarc.governance.CycleGovernanceKind
 import io.atlasarc.governance.CycleGovernanceRecord
 import io.atlasarc.governance.GovernanceAnalysisSource
 import io.atlasarc.governance.GovernanceBackend
+import io.atlasarc.governance.GovernanceDependencyKind
 import io.atlasarc.governance.GovernanceEncodeResult
 import io.atlasarc.governance.GovernanceIdentity
 import io.atlasarc.governance.GovernanceLanguage
@@ -58,6 +59,32 @@ class AtlasArcGovernanceRecipeTest {
         assertDoesNotThrow {
             recipeRule(repository).check(governedClasses)
         }
+    }
+
+    @Test
+    fun `same-line constructor and method remain two observed reference tuples`() {
+        val repository = repositoryWithGovernance()
+        val evidence = ArchUnitGovernanceEvidence().build(
+            classes = governedClasses,
+            sourceRoots = listOf(JvmEvidenceRoot(Path.of("src/test/java").toAbsolutePath(), "test")),
+            analysisSourceId = "jvm:whole-project",
+            repositoryRoot = repository,
+        ).evidence
+
+        val tuples = evidence.references.asSequence()
+            .filter { it.source.type == "$GOVERNED.orders.OrderService" }
+            .filter { it.source.member?.name == "roundTrip" }
+            .filter { it.target.type == "$GOVERNED.billing.Invoice" }
+            .map { it.target.member?.name to it.dependencyKind }
+            .toSet()
+
+        assertEquals(
+            setOf(
+                "<init>" to GovernanceDependencyKind.CONSTRUCTOR_CALL,
+                "orders" to GovernanceDependencyKind.METHOD_CALL,
+            ),
+            tuples,
+        )
     }
 
     @Test

@@ -1,5 +1,6 @@
 package io.atlasarc.archunit.internal
 
+import com.tngtech.archunit.core.domain.Dependency
 import com.tngtech.archunit.core.domain.JavaClass
 import com.tngtech.archunit.core.domain.JavaCodeUnit
 import com.tngtech.archunit.core.domain.JavaClasses
@@ -65,14 +66,7 @@ internal class RichDependencyExtractor(
             val targetOwner = access.targetOwner       // JavaClass owning the accessed member
             if (!isProjectInternal(origin, targetOwner, projectPackages)) continue
 
-            val kind = when (access) {
-                is JavaMethodCall      -> DependencyKind.METHOD_CALL
-                is JavaMethodReference -> DependencyKind.METHOD_CALL
-                is JavaConstructorCall -> DependencyKind.CONSTRUCTOR_CALL
-                is JavaConstructorReference -> DependencyKind.CONSTRUCTOR_CALL
-                is JavaFieldAccess     -> DependencyKind.FIELD_ACCESS
-                else                   -> continue   // guard against future ArchUnit access types
-            }
+            val kind = dependencyKind(access) ?: continue
 
             val location     = access.sourceCodeLocation
             val sourceFile   = location.sourceFileName
@@ -152,6 +146,7 @@ internal class RichDependencyExtractor(
                     targetModuleRef.stableName,
                 ).ifBlank { null },
                 targetModuleRef = targetModuleRef,
+                attributionConfidence = DependencyAttributionConfidence.INFERRED,
             )
         }
     }
@@ -162,58 +157,51 @@ internal class RichDependencyExtractor(
         origin: JavaClass,
         projectPackages: Set<String>,
     ): List<RichDependencyRecord> {
-        return origin.directDependenciesFromSelf.mapNotNull { dep ->
-            val target = dep.targetClass
-            if (!isProjectInternal(origin, target, projectPackages)) return@mapNotNull null
+        val concreteAccessDependencies = origin.accessesFromSelf
+            .filter { dependencyKind(it) != null }
+            .flatMap { access -> access.convertTo(Dependency::class.java) }
+            .toSet()
+        return origin.directDependenciesFromSelf
+            .filterNot(concreteAccessDependencies::contains)
+            .mapNotNull { dep ->
+                val target = dep.targetClass
+                if (!isProjectInternal(origin, target, projectPackages)) return@mapNotNull null
 
-            val location     = dep.sourceCodeLocation
-            val sourceFile   = location.sourceFileName
-            val line         = location.lineNumber.takeIf { it > 0 }
-            val originModuleRef = moduleRefFor(origin, sourceFile)
-            val sourcePath   = sourceIndex.resolveSourceFile(origin.packageName, sourceFile, originModuleRef.stableName)
-            val targetSourceFile = target.sourceCodeLocation.sourceFileName
-            val targetModuleRef = moduleRefFor(target, targetSourceFile)
+                val location     = dep.sourceCodeLocation
+                val sourceFile   = location.sourceFileName
+                val line         = location.lineNumber.takeIf { it > 0 }
+                val originModuleRef = moduleRefFor(origin, sourceFile)
+                val sourcePath   = sourceIndex.resolveSourceFile(origin.packageName, sourceFile, originModuleRef.stableName)
+                val targetSourceFile = target.sourceCodeLocation.sourceFileName
+                val targetModuleRef = moduleRefFor(target, targetSourceFile)
 
-            RichDependencyRecord(
-                originClass    = origin.name,
-                originPackage  = origin.packageName,
-                originMember   = null,
-                sourceFileName = sourceFile,
-                sourceFilePath = sourcePath,
-                originModuleRef = originModuleRef,
-                line           = line,
-                targetClass    = target.name,
-                targetPackage  = target.packageName,
-                targetMember   = null,
-                kind           = DependencyKind.STRUCTURAL,
-                targetSourceFilePath = sourceIndex.resolveSourceFile(
-                    target.packageName,
-                    targetSourceFile,
-                    targetModuleRef.stableName,
-                ).ifBlank { null },
-                targetModuleRef = targetModuleRef,
-            )
-        }
+                RichDependencyRecord(
+                    originClass    = origin.name,
+                    originPackage  = origin.packageName,
+                    originMember   = null,
+                    sourceFileName = sourceFile,
+                    sourceFilePath = sourcePath,
+                    originModuleRef = originModuleRef,
+                    line           = line,
+                    targetClass    = target.name,
+                    targetPackage  = target.packageName,
+                    targetMember   = null,
+                    kind           = DependencyKind.STRUCTURAL,
+                    targetSourceFilePath = sourceIndex.resolveSourceFile(
+                        target.packageName,
+                        targetSourceFile,
+                        targetModuleRef.stableName,
+                    ).ifBlank { null },
+                    targetModuleRef = targetModuleRef,
+                )
+            }
     }
 
     // ── Deduplication ─────────────────────────────────────────────────────
 
-    /** Collapses records with the same [RichDependencyIdentity] into one. */
+    /** Data-class equality covers the full observed/inferred tuple, including location and confidence. */
     private fun deduplicate(records: List<RichDependencyRecord>): List<RichDependencyRecord> =
-        records
-            .groupBy {
-                RichDependencyIdentity(
-                    originClass  = it.originClass,
-                    originModuleRef = it.originModuleRef,
-                    originMember = it.originMember,
-                    targetClass  = it.targetClass,
-                    targetModuleRef = it.targetModuleRef,
-                    targetMember = it.targetMember,
-                    kind         = it.kind,
-                    line         = it.line,
-                )
-            }
-            .map { (_, group) -> group.first() }
+        records.distinct()
 
     private fun moduleRefFor(javaClass: JavaClass, sourceFileName: String?): JvmModuleRef =
         classOwnership.moduleRefFor(javaClass.name)
@@ -230,6 +218,17 @@ internal class RichDependencyExtractor(
     ): Boolean {
         if (origin.name == target.name) return false
         return target.packageName in projectPackages
+    }
+
+    private fun dependencyKind(
+        access: com.tngtech.archunit.core.domain.JavaAccess<*>,
+    ): DependencyKind? = when (access) {
+        is JavaMethodCall -> DependencyKind.METHOD_CALL
+        is JavaMethodReference -> DependencyKind.METHOD_CALL
+        is JavaConstructorCall -> DependencyKind.CONSTRUCTOR_CALL
+        is JavaConstructorReference -> DependencyKind.CONSTRUCTOR_CALL
+        is JavaFieldAccess -> DependencyKind.FIELD_ACCESS
+        else -> null
     }
 }
 
