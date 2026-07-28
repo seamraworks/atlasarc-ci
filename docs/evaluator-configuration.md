@@ -6,9 +6,10 @@ It does not contain acceptance decisions. Those live separately in the repositor
 It also does not contain repository exclusions. Those live at
 `.atlasarc/governance/scope.json`; see [Define repository analysis scope](repository-scope.md).
 
-The conventional location is `.atlasarc/evaluator.json`, although `--config` accepts any path. A
-committed configuration gives developers and CI the same evidence boundary and avoids a pipeline
-that silently evaluates a different part of the repository.
+The conventional location is `.atlasarc/evaluator.json`. The JUnit adapter reads it in-process;
+the standalone CLI accepts it through `--config`. A committed configuration gives developers and
+CI the same evidence boundary and avoids a pipeline that silently evaluates a different part of
+the repository.
 
 ## Evaluation sequence
 
@@ -20,7 +21,8 @@ For every configured source, the evaluator:
 4. rejects missing, stale, ambiguous, or inconsistent evidence;
 5. removes repository-scoped architecture units and their incident dependencies;
 6. evaluates all retained sources with the same governance engine; and
-7. emits a human, JSON, or SARIF result and a process exit code.
+7. returns one deterministic verdict, which JUnit maps to an assertion and the standalone CLI maps
+   to human, JSON, or SARIF output plus a process exit code.
 
 The evaluator never invokes a compiler, Maven, Gradle, npm, or dependency-cruiser. Produce the
 artifacts first, then run the gate.

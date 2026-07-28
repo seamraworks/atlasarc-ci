@@ -6,8 +6,8 @@ current concrete references as reviewable `DEBT` in `.atlasarc/governance/cycles
 evaluation can then pass for the known backlog while a genuinely new ungoverned cycle still fails.
 
 This is an adoption step, not a second evaluation mode. The generated records use the ordinary
-governance schema and remain visible to AtlasArc.io for IntelliJ, the standalone evaluator, and the
-ArchUnit/JUnit adapter.
+governance schema and remain visible to AtlasArc.io for IntelliJ, the configured evaluator through
+JUnit or the standalone CLI, and the ArchUnit adapter.
 
 The command was introduced in AtlasArc.io CI 1.1.0. Narrow feedback-edge selection replaces the
 original all-edges proposal in 1.2.0.

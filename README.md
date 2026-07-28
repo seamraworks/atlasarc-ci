@@ -46,26 +46,35 @@ The process is deliberately evidence-first. AtlasArc.io CI does not invoke Maven
 dependency-cruiser: your existing build produces the evidence, then the evaluator checks it. This
 keeps the gate predictable and lets each repository retain control of its toolchain.
 
-## One contract, two enforcement paths
+## One contract, three integrations
 
-Most teams need one of these integrations. Both use the same schemas, scope policy, matcher,
-module identity, coverage rules, and cycle calculation.
+All three integrations use the same schemas, scope policy, matcher, module identity, coverage
+rules, and cycle calculation. Choose the boundary that fits the owning build.
 
-| | Standalone evaluator | ArchUnit/JUnit adapter |
-|---|---|---|
-| Best fit | TypeScript, mixed stacks, non-JUnit pipelines, or a tool-neutral process boundary | Java/Kotlin projects that already run architecture tests |
-| Developer feedback | Runs when a task or script invokes it | Runs with ordinary IDE, Maven, and Gradle tests |
-| Failure contract | Process exit code | ArchUnit test violation |
-| Output | Human text, JSON, or SARIF | Normal JUnit/ArchUnit reporting |
-| Runtime input | Explicit JVM build roots or dependency-cruiser JSON | ArchUnit-imported classes plus matching source/class roots |
+| | JUnit adapter | Standalone evaluator | ArchUnit adapter |
+|---|---|---|---|
+| Best fit | JUnit 5 projects that want the complete configured JVM, TypeScript, or mixed-stack verdict in ordinary tests | Non-JUnit pipelines or a tool-neutral process and machine-output boundary | Java/Kotlin projects whose architecture suite already imports classes through ArchUnit |
+| Developer feedback | Runs in-process with ordinary IDE, Maven, and Gradle tests | Runs when a task, script, or developer invokes the process | Runs as a native `ArchRule` in the existing architecture test |
+| Failure contract | JUnit assertion failure | Process exit code | ArchUnit violation |
+| Output | Human evaluator detail in the test failure | Human text, JSON, or SARIF | Normal JUnit/ArchUnit reporting |
+| Runtime input | `evaluator.json`: explicit JVM build roots and/or dependency-cruiser JSON | The same configured evidence | ArchUnit-imported classes plus matching source/class roots |
 
-The third artifact, `atlasarc-governance-core`, is for tools that need to embed the portable
-contract and evaluator. It is not a separate end-user workflow.
+The JUnit adapter invokes the configured evaluator in-process; it does not spawn the standalone
+JAR. The ArchUnit adapter instead maps the consuming suite's imported JVM classes directly into the
+same core. `atlasarc-governance-core` remains the extension artifact for tools that own another
+evidence adapter or workflow, not a separate end-user integration.
+
+For JVM sources, the configured evaluator itself reuses ArchUnit's bytecode importer under the
+hood. That is an evidence-acquisition implementation detail: JUnit-adapter consumers configure
+class/source roots and call an assertion, while ArchUnit-adapter consumers import the classes up
+front and receive a native `ArchRule`.
 
 ## Guides and contracts
 
 - [Configure the evaluator](docs/evaluator-configuration.md) explains `evaluator.json`, JVM and
   TypeScript evidence, module identity, path resolution, freshness, output, and troubleshooting.
+- [Run the evaluator from JUnit](docs/junit-adapter.md) explains the in-process assertion, build
+  ordering, source-preview installation, and failure contract.
 - [Define repository analysis scope](docs/repository-scope.md) explains `scope.json`, portable
   JVM/TypeScript selectors, module semantics, fail-closed behavior, and audit output.
 - [Govern cycle decisions](docs/governance-decisions.md) explains `cycles.json`, the decision
@@ -84,10 +93,62 @@ contracts.
 [![Verified examples](https://github.com/seamraworks/atlasarc-ci/actions/workflows/verified-examples.yml/badge.svg)](https://github.com/seamraworks/atlasarc-ci/actions/workflows/verified-examples.yml)
 
 The [verified Java and TypeScript examples](examples/verified-governance/README.md) exercise the
-published integrations as users consume them. Six expected-outcome jobs prove that the standalone
-JVM evaluator, ArchUnit/JUnit adapter, and standalone TypeScript evaluator reject an ungoverned
+currently published integrations as users consume them. Six expected-outcome jobs prove that the standalone
+JVM evaluator, ArchUnit adapter, and standalone TypeScript evaluator reject an ungoverned
 cycle and pass the same cycle after a reviewed repository decision. The jobs publish nothing and
 stay green only when rejection happens for the intended AtlasArc.io cycle reason.
+
+## Run the configured evaluator from JUnit
+
+The source tree includes `io.atlasarc:atlasarc-junit`, an in-process JUnit 5 assertion over the
+same configured evaluator used by the CLI. It can therefore evaluate Java, Kotlin, TypeScript, or a
+mixed-stack `evaluator.json` in an ordinary test without adopting ArchUnit's test API.
+
+The adapter is a source preview until the next coordinated release is visible on Maven Central.
+Build and install the reactor locally before trying the coordinate from this checkout:
+
+```shell
+mvn install -DskipTests
+```
+
+Then add the reactor version as a test dependency:
+
+```xml
+<dependency>
+  <groupId>io.atlasarc</groupId>
+  <artifactId>atlasarc-junit</artifactId>
+  <version>${atlasarc-ci.version}</version>
+  <scope>test</scope>
+</dependency>
+```
+
+```kotlin
+testImplementation("io.atlasarc:atlasarc-junit:$atlasarcCiVersion")
+```
+
+After the build has compiled JVM classes and/or generated the configured dependency-cruiser JSON,
+one ordinary JUnit test runs the gate:
+
+```java
+import io.atlasarc.junit.AtlasArcGovernanceAssertions;
+import org.junit.jupiter.api.Test;
+import java.nio.file.Path;
+
+class CycleGovernanceTest {
+    @Test
+    void repositoryCycleGovernance() {
+        AtlasArcGovernanceAssertions.assertGovernance(
+            Path.of(".atlasarc/evaluator.json")
+        );
+    }
+}
+```
+
+Clean evaluation returns normally. Unaccepted cycles, invalid or stale evidence, and internal
+errors become assertion failures containing the evaluator's human result. The assertion does not
+generate evidence and does not consume ESLint or SonarJS reports; compile Java/Kotlin and generate
+dependency-cruiser JSON before the test runs. See the [JUnit adapter guide](docs/junit-adapter.md)
+for build-order and mixed-stack details.
 
 ## Install the standalone evaluator
 
@@ -249,19 +310,20 @@ decision reasons, tickets, and absolute workstation paths.
 | `2` | Configuration, schema, evidence freshness, acquisition, or governance validation failed. |
 | `3` | An unexpected internal error occurred. |
 
-## Run the same gate through ArchUnit
+## Use the ArchUnit adapter with an existing architecture suite
 
-The ArchUnit adapter places the evaluator in the normal JVM test lifecycle. Accepted cycles pass;
-a new unaccepted cycle fails the test locally and in CI without requiring developers to remember a
-separate command.
+The ArchUnit adapter is the focused alternative when a Java/Kotlin project already imports its
+architecture through ArchUnit. It maps that imported class universe into AtlasArc and exposes the
+verdict as a native `ArchRule`. Accepted cycles pass; a new unaccepted cycle fails the test locally
+and in CI.
 
 One shared `cycles.json` may contain both JVM and TypeScript decisions. The ArchUnit rule evaluates
 the Java/Kotlin records covered by its imported classes and leaves valid TypeScript records
 `not-in-analysis`; those records do not fail the JUnit test. A malformed governance document or an
-invalid record in the covered JVM evidence still fails closed. Use the standalone evaluator with
-both evidence sources when the build needs one complete mixed-stack verdict.
+invalid record in the covered JVM evidence still fails closed. Use the JUnit adapter or standalone
+evaluator with both evidence sources when one integration needs the complete mixed-stack verdict.
 
-The ArchUnit/JUnit adapter is published on Maven Central as
+The ArchUnit adapter is published on Maven Central as
 `io.atlasarc:atlasarc-archunit:1.3.0`.
 
 Maven:
@@ -366,8 +428,9 @@ All artifacts use the `io.atlasarc` group, share one version, and are released t
 | Artifact | Responsibility |
 |---|---|
 | `atlasarc-governance-core` | Portable schemas, repository scope, evidence contract, validation, matching, coverage, and deterministic cycle verdict. |
-| `atlasarc-archunit` | JVM evidence acquisition and the Java-friendly ArchUnit/JUnit rule. |
 | `atlasarc-ci` | Standalone configuration, JVM/TypeScript acquisition, renderers, exit codes, and executable distribution. |
+| `atlasarc-junit` | JUnit 5 assertion over the configured evaluator, including JVM, TypeScript, and mixed-stack input. |
+| `atlasarc-archunit` | JVM evidence acquisition and the Java-friendly native ArchUnit rule. |
 
 Adapters can depend only on the portable engine:
 
@@ -417,7 +480,7 @@ approval jobs. No artifact is published merely by pushing a commit or running th
 
 ## Compatibility, security, and license
 
-The three artifacts follow semantic versioning. Governance schema and result versions are
+The four artifacts follow semantic versioning. Governance schema and result versions are
 independent protocol versions; unsupported newer documents fail closed. Before 1.0, minor releases
 may adjust public APIs. From 1.0 onward, incompatible public API or contract changes require a major
 release.

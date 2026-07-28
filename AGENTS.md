@@ -1,18 +1,21 @@
 # AtlasArc.io CI contributor instructions
 
 This public repository is the canonical source for AtlasArc.io's portable cycle-governance contract,
-standalone CI evaluator, and ArchUnit/JUnit adapter.
+standalone CI evaluator, JUnit adapter, and ArchUnit adapter.
 
 ## Boundaries
 
 - `atlasarc-governance-core` owns the schema, repository store, portable evidence contract,
   matcher, accepted-reference overlay, SCC evaluation, and deterministic result. It must not
   depend on IntelliJ, ArchUnit, Node, Gradle APIs, plugin view models, or product workflows.
-- `atlasarc-archunit` maps imported JVM bytecode to portable evidence and exposes the JUnit-facing
+- `atlasarc-archunit` maps imported JVM bytecode to portable evidence and exposes the native
   ArchRule. It depends inward on core.
 - `atlasarc-ci` owns configuration, headless acquisition, output renderers, exit codes, and the
   executable distribution. It reuses the ArchUnit JVM evidence adapter and depends on core for all
   governance semantics.
+- `atlasarc-junit` exposes the configured evaluator as a JUnit 5 assertion. It depends on
+  `atlasarc-ci`, performs no separate acquisition or evaluation, and must preserve the evaluator's
+  JVM, TypeScript, and mixed-stack behavior.
 - The private AtlasArc.io for IntelliJ repository consumes these public coordinates. Never introduce
   a dependency on private plugin code or copy plugin workflows into this repository.
 

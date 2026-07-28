@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Verify Maven Central artifacts
           command: |
-            for module in atlasarc-governance-core atlasarc-archunit atlasarc-ci; do
+            for module in atlasarc-governance-core atlasarc-archunit atlasarc-ci atlasarc-junit; do
               sources_jar=$(find "$module/target" -maxdepth 1 -name "$module-*-sources.jar" -print -quit)
               javadoc_jar=$(find "$module/target" -maxdepth 1 -name "$module-*-javadoc.jar" -print -quit)
               test -n "$sources_jar"

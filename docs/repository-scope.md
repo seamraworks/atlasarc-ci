@@ -2,8 +2,9 @@
 
 Repository scope answers one question before AtlasArc evaluates architecture: **which architecture
 units are outside this repository's governed evidence universe?** The policy is committed at the
-Git root as `.atlasarc/governance/scope.json` and is applied identically by the standalone
-evaluator, the ArchUnit/JUnit adapter, AtlasArc.io for IntelliJ, and whole-model reports.
+Git root as `.atlasarc/governance/scope.json` and is applied identically by the configured evaluator
+through JUnit or the standalone CLI, the ArchUnit adapter, AtlasArc.io for IntelliJ, and whole-model
+reports.
 
 Use scope for durable boundaries such as generated code, vendored code, framework output, or a
 deliberately fenced migration area. Do not use it merely to make a cycle disappear: an in-scope
@@ -109,7 +110,7 @@ current analysis. They neither suppress in-scope evidence nor make the evaluatio
 
 Repository scope changes the evidence evaluated in CI. Interactive filters and shared
 investigation views in AtlasArc.io for IntelliJ only change how an in-scope model is explored; the
-standalone evaluator and ArchUnit adapter never read `.atlasarc/views.json`. Choosing a view cannot
+JUnit adapter, standalone evaluator, and ArchUnit adapter never read `.atlasarc/views.json`. Choosing a view cannot
 weaken the build gate.
 
 Review scope changes like build configuration. In particular, a broad wildcard can also exclude
