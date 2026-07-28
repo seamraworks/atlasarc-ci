@@ -217,6 +217,10 @@ class CycleGovernanceMatcher(
             )
         }
 
+        if (record.scope == GovernanceScope.REFERENCE) {
+            return matchExactReferenceRecord(recordId, record, evidence, usableSources)
+        }
+
         val sourceNodes = matchingNodes(record, GovernanceOwnerSide.SOURCE, evidence, usableSources)
         if (sourceNodes.isEmpty()) {
             if (!evidenceCovers(record, record.source, usableSources, evidence.caseSensitive)) {
@@ -278,46 +282,6 @@ class CycleGovernanceMatcher(
             .sorted()
             .toList()
 
-        if (record.scope == GovernanceScope.REFERENCE) {
-            val expected = record.referenceIds.toSortedSet()
-            val presentExpected = sortedSetOf<String>()
-            val presentActual = sortedSetOf<String>()
-            matchingReferences.forEach { reference ->
-                val aliases = setOf(
-                    reference.id,
-                    GovernanceIds.referenceId(
-                        analysisSourceId = record.analysisSource.id,
-                        backend = reference.backend,
-                        sourceLanguage = reference.sourceLanguage,
-                        targetLanguage = reference.targetLanguage,
-                        source = reference.source,
-                        target = reference.target,
-                        dependencyKind = reference.dependencyKind,
-                    ),
-                )
-                if (aliases.any { it in expected }) {
-                    presentExpected += aliases.filter { it in expected }
-                    presentActual += reference.id
-                }
-            }
-            return when {
-                presentExpected.size < expected.size && !evidenceCoversDependency(record, usableSources, evidence.caseSensitive) ->
-                    notInAnalysis(recordId)
-                presentExpected.isEmpty() -> GovernanceRecordMatch(
-                    recordId,
-                    GovernanceRecordStatus.RESOLVED,
-                    diagnostics = listOf("None of the recorded concrete references exists anymore."),
-                )
-                presentExpected.size < expected.size -> GovernanceRecordMatch(
-                    recordId,
-                    GovernanceRecordStatus.PARTIAL,
-                    matchedReferenceIds = presentActual.toList(),
-                    diagnostics = listOf("Only ${presentExpected.size} of ${expected.size} recorded concrete references still matches; governance fails closed."),
-                )
-                else -> GovernanceRecordMatch(recordId, GovernanceRecordStatus.ACTIVE, presentActual.toList())
-            }
-        }
-
         return if (matched.isEmpty()) {
             if (!evidenceCoversDependency(record, usableSources, evidence.caseSensitive)) {
                 notInAnalysis(recordId)
@@ -330,6 +294,86 @@ class CycleGovernanceMatcher(
             GovernanceRecordMatch(recordId, GovernanceRecordStatus.ACTIVE, matched)
         }
     }
+
+    private fun matchExactReferenceRecord(
+        recordId: String,
+        record: CycleGovernanceRecord,
+        evidence: GovernanceEvidenceSnapshot,
+        usableSources: List<GovernanceEvidenceSource>,
+    ): GovernanceRecordMatch {
+        val expected = record.referenceIds.toSortedSet()
+        val presentExpected = sortedSetOf<String>()
+        val presentActual = sortedSetOf<String>()
+        val semanticConflicts = sortedSetOf<String>()
+
+        evidence.references.asSequence()
+            .filter { reference -> sourceIsUsable(reference.analysisSourceId, usableSources, evidence.caseSensitive) }
+            .filter { reference -> reference.backend == record.analysisSource.backend }
+            .filter { reference ->
+                val ownerLanguage = if (record.ownerSide == GovernanceOwnerSide.SOURCE) {
+                    reference.sourceLanguage
+                } else {
+                    reference.targetLanguage
+                }
+                ownerLanguage == record.analysisSource.language
+            }
+            .forEach { reference ->
+                val aliases = referenceAliases(record, reference)
+                val matchedExpected = aliases.filterTo(sortedSetOf()) { it in expected }
+                if (matchedExpected.isEmpty()) return@forEach
+                if (!referenceMatches(record, reference, evidence.caseSensitive)) {
+                    semanticConflicts += reference.id
+                    return@forEach
+                }
+                presentExpected += matchedExpected
+                presentActual += reference.id
+            }
+
+        if (semanticConflicts.isNotEmpty()) {
+            return GovernanceRecordMatch(
+                recordId,
+                GovernanceRecordStatus.AMBIGUOUS,
+                diagnostics = listOf(
+                    "Recorded concrete reference IDs now identify different dependency semantics: ${semanticConflicts.joinToString()}.",
+                ),
+            )
+        }
+
+        val covered = evidenceCoversDependency(record, usableSources, evidence.caseSensitive)
+        return when {
+            presentExpected.size < expected.size && !covered -> notInAnalysis(recordId)
+            presentExpected.isEmpty() -> GovernanceRecordMatch(
+                recordId,
+                GovernanceRecordStatus.RESOLVED,
+                diagnostics = listOf("None of the recorded concrete references exists in complete covered evidence."),
+            )
+            presentExpected.size < expected.size -> GovernanceRecordMatch(
+                recordId,
+                GovernanceRecordStatus.PARTIAL,
+                matchedReferenceIds = presentActual.toList(),
+                diagnostics = listOf(
+                    "Only ${presentExpected.size} of ${expected.size} recorded concrete references still matches; governance fails closed.",
+                ),
+            )
+            else -> GovernanceRecordMatch(recordId, GovernanceRecordStatus.ACTIVE, presentActual.toList())
+        }
+    }
+
+    private fun referenceAliases(
+        record: CycleGovernanceRecord,
+        reference: GovernanceEvidenceReference,
+    ): Set<String> = setOf(
+        reference.id,
+        GovernanceIds.referenceId(
+            analysisSourceId = record.analysisSource.id,
+            backend = reference.backend,
+            sourceLanguage = reference.sourceLanguage,
+            targetLanguage = reference.targetLanguage,
+            source = reference.source,
+            target = reference.target,
+            dependencyKind = reference.dependencyKind,
+        ),
+    )
 
     private fun matchingNodes(
         record: CycleGovernanceRecord,

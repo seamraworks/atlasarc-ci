@@ -182,6 +182,59 @@ class CycleGovernanceMatcherTest {
     }
 
     @Test
+    fun `exact reference resolves even when its declaration endpoints no longer materialize`() {
+        val source = identity("retired.source", "retired.source.Owner", module = "orders")
+        val target = identity("retired.target", "retired.target.Target", module = "orders")
+        val exact = record(
+            scope = GovernanceScope.REFERENCE,
+            source = source,
+            target = target,
+            kind = CycleGovernanceKind.DEBT,
+        ).copy(referenceIds = setOf("retired-reference"))
+        val evidence = snapshot(
+            jvmSource(repositoryComplete = true),
+            references = emptyList(),
+            extraNodes = emptyList(),
+        )
+
+        val resolved = matcher.match(document("retired" to exact), evidence)
+            .records.getValue("retired")
+
+        assertEquals(GovernanceRecordStatus.RESOLVED, resolved.status)
+        assertTrue(resolved.matchedReferenceIds.isEmpty())
+    }
+
+    @Test
+    fun `exact reference stays neutral outside a partial analysis and reactivates when evidence returns`() {
+        val source = identity("shared.left", "shared.left.Owner", module = "orders")
+        val target = identity("shared.right", "shared.right.Target", module = "orders")
+        val reference = ref("orders-reference", source, target)
+        val exact = record(
+            scope = GovernanceScope.REFERENCE,
+            source = source,
+            target = target,
+            kind = CycleGovernanceKind.DEBT,
+        ).copy(referenceIds = setOf(reference.id))
+        val outside = snapshot(
+            jvmSource(
+                id = "jvm:module:billing",
+                repositoryComplete = false,
+                includedJvmModules = setOf("billing"),
+            ),
+            references = emptyList(),
+        ).copy(evaluationComplete = false)
+
+        val notInAnalysis = matcher.match(document("orders" to exact), outside)
+            .records.getValue("orders")
+        val active = matcher.match(document("orders" to exact), snapshot(jvmSource(), listOf(reference)))
+            .records.getValue("orders")
+
+        assertEquals(GovernanceRecordStatus.NOT_IN_ANALYSIS, notInAnalysis.status)
+        assertEquals(GovernanceRecordStatus.ACTIVE, active.status)
+        assertEquals(listOf(reference.id), active.matchedReferenceIds)
+    }
+
+    @Test
     fun `reference id disambiguates concrete evidence when declaration metadata is necessarily incomplete`() {
         val source = identity("a", "a.Origin", sourceFile = "src/main/java/a/Origin.java")
         val target = identity("b", "b.Target", sourceFile = "src/main/java/b/Target.java")
