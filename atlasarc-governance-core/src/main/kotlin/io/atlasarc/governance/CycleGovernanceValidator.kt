@@ -53,6 +53,13 @@ class CycleGovernanceValidator {
         }
 
         if (!RECORD_ID.matches(id)) add("invalid-record-id", "id", "Record ID must match ${RECORD_ID.pattern}.")
+        if (CycleDebtBaselineRecordIds.isReserved(id) && !CycleDebtBaselineRecordIds.isManaged(id, record)) {
+            add(
+                "invalid-baseline-record-id",
+                "id",
+                "Reserved cycle-baseline IDs must match their single exact reference and remain source-owned Debt records.",
+            )
+        }
         bounded(record.analysisSource.id, 1, MAX_IDENTITY, "analysisSource.id", ::add)
         bounded(record.reason, 1, MAX_REASON, "reason", ::add)
         record.ticket?.let { bounded(it, 1, MAX_TICKET, "ticket", ::add) }

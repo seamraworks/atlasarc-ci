@@ -191,7 +191,7 @@ Every evaluation classifies each record against current evidence:
 | Status | Meaning | Build effect |
 |---|---|---|
 | `active` | The selector matches current dependency evidence. | Matching references contribute accepted coverage. |
-| `resolved` | The selected dependency or every recorded concrete reference is gone. | Does not invalidate the gate; consider removing the obsolete record. |
+| `resolved` | Complete covered evidence no longer contains the selected dependency or any recorded concrete reference. | Does not invalidate the gate. The retained record is re-evaluated and becomes active if evidence returns; resolved baseline cleanup is a separate explicit operation. |
 | `not-in-analysis` | A deliberately partial analysis does not cover this record. | The record is not applied and is not treated as proof about unexamined code. |
 | `missing-source` | Covered evidence no longer contains the selected source identity. | Invalid; fails closed. |
 | `missing-target` | Covered evidence no longer contains the selected target identity. | Invalid; fails closed. |

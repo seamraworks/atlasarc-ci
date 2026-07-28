@@ -4,8 +4,6 @@ import io.atlasarc.evaluation.CycleGovernanceEvaluator
 import io.atlasarc.evaluation.GovernanceEvaluationInput
 import io.atlasarc.evaluation.GovernanceEvaluationResult
 import io.atlasarc.evaluation.GovernanceEvaluationVerdict
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import io.atlasarc.scope.RepositoryScopeEvaluationContext
 
 const val DEFAULT_CYCLE_DEBT_BASELINE_REASON: String =
@@ -146,7 +144,7 @@ class CycleDebtBaselinePlanner private constructor(
         val added = linkedMapOf<String, CycleGovernanceRecord>()
         for (referenceId in selectedReferenceIds) {
             val reference = referencesById.getValue(referenceId).single()
-            val recordId = baselineRecordId(reference)
+            val recordId = CycleDebtBaselineRecordIds.forReferenceId(reference.id)
             val record = reference.toBaselineRecord(options)
             val existing = document.records[recordId]
             if (existing != null && existing != record) {
@@ -277,11 +275,4 @@ class CycleDebtBaselinePlanner private constructor(
             reason = options.reason.trim(),
             ticket = options.ticket?.trim()?.takeIf(String::isNotEmpty),
         )
-
-    private fun baselineRecordId(reference: GovernanceEvidenceReference): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest(reference.id.toByteArray(StandardCharsets.UTF_8))
-            .joinToString("") { "%02x".format(it) }
-        return "cycle-baseline-${digest.take(32)}"
-    }
 }

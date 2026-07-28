@@ -60,6 +60,8 @@ Every generated record:
 
 - has `scope: "reference"` and covers exactly one current concrete dependency;
 - is classified as `DEBT`, never `INTENTIONAL`;
+- uses a deterministic reserved ID of `cycle-baseline-<reference digest>` so cleanup provenance is
+  structural rather than inferred from editable reason text;
 - retains source and target module identity when the evidence is module-qualified; and
 - uses the standard reason `Established as existing cycle debt by the AtlasArc.io CI baseline.`
 
@@ -105,6 +107,21 @@ module, the whole JVM project, or a configured TypeScript source. The proposal c
 loaded from that source, leaves records from other sources untouched and not evaluated, and
 distinguishes current problem cycles, selected cycle-breaking edges, and exact debt records before
 writing. The governance hub then supports normal review, reclassification, repair, and removal.
+
+## Resolved records and cleanup
+
+Exact baseline records are re-evaluated on every run. Complete covered evidence that no longer
+contains the recorded call or import marks that record `resolved`, even when the former member,
+type, file, or package no longer materializes as a node. A partial Analysis Source, excluded
+repository scope, or stale/unavailable evidence remains neutral or unsupported instead of proving
+resolution. If the exact reference returns, the retained record becomes active again automatically.
+
+Evaluation and rebaselining never delete resolved records. AtlasArc.io for IntelliJ provides the
+separate explicit **Clean resolved baseline records** workflow. Its shared-core proposal removes
+only reserved, exact, single-reference Debt records that current covered evidence safely proves
+resolved; independently authored decisions and records outside current evidence remain. The
+proposal is revision-, scope-, and evidence-fingerprinted so the application can refuse a stale
+write atomically. AtlasArc.io CI does not run cleanup as part of `evaluate` or `baseline`.
 
 ## When AtlasArc refuses
 
