@@ -1,0 +1,19 @@
+{
+  "modules": [
+    {
+      "source": "src/a/index.ts",
+      "dependencies": [],
+      "orphan": true
+    },
+    {
+      "source": "src/b/index.ts",
+      "dependencies": [],
+      "orphan": true
+    },
+    {
+      "source": "src/c/index.ts",
+      "dependencies": [],
+      "orphan": true
+    }
+  ]
+}

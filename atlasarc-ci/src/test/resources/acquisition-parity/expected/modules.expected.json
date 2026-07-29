@@ -1,0 +1,395 @@
+{
+    "schemaVersion": 1,
+    "sources": [
+        {
+            "id": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "languages": [
+                "java",
+                "kotlin"
+            ],
+            "supportedScopes": [
+                "member",
+                "package",
+                "reference",
+                "type"
+            ],
+            "fresh": true,
+            "includedJvmModules": [
+                "billing",
+                "orders"
+            ]
+        }
+    ],
+    "architectureUnits": [
+        {
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "language": "java",
+            "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+            "module": "billing"
+        },
+        {
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "language": "java",
+            "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+            "module": "billing"
+        },
+        {
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "language": "java",
+            "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+            "module": "orders"
+        },
+        {
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "language": "java",
+            "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+            "module": "orders"
+        }
+    ],
+    "references": [
+        {
+            "id": "ref-194beae50cbe4e82f3cb65a68c8c599e",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.BillingRight",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/BillingRight.java",
+                "memberName": "call",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/modules/shared/left/BillingLeft;)I",
+                "module": "billing"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.BillingLeft",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/BillingLeft.java",
+                "memberName": "touch",
+                "memberDescriptor": "()I",
+                "module": "billing"
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-1bfa8fa7163dbfc399a1f4f771b18f86",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.OrdersLeft",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/OrdersLeft.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "orders"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.OrdersRight",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/OrdersRight.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "orders"
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-39ee34830cf321b20b1c073f22385be1",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.OrdersRight",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/OrdersRight.java",
+                "memberName": "call",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/modules/shared/left/OrdersLeft;)I",
+                "module": "orders"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.OrdersLeft",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/OrdersLeft.java",
+                "memberName": "touch",
+                "memberDescriptor": "()I",
+                "module": "orders"
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-70a268336bd842ee51346628d39117f2",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.OrdersLeft",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/OrdersLeft.java",
+                "memberName": "call",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/modules/shared/right/OrdersRight;)I",
+                "module": "orders"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.OrdersRight",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/OrdersRight.java",
+                "memberName": "touch",
+                "memberDescriptor": "()I",
+                "module": "orders"
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-87a4ef8f32fab2edae18461e4b895f9b",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.BillingLeft",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/BillingLeft.java",
+                "memberName": "call",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/modules/shared/right/BillingRight;)I",
+                "module": "billing"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.BillingRight",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/BillingRight.java",
+                "memberName": "touch",
+                "memberDescriptor": "()I",
+                "module": "billing"
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-b2639c56dc9c1f5d207ebd98e0f1ed3f",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.OrdersRight",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/OrdersRight.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "orders"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.OrdersLeft",
+                "sourceFile": "modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/OrdersLeft.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "orders"
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-eea4d68cdcddf4f660de838c6aa4e324",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.BillingLeft",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/BillingLeft.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "billing"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.BillingRight",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/BillingRight.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "billing"
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-f8e0a61b5d090499602e0004e588312e",
+            "analysisSourceId": "jvm:modules",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.right.BillingRight",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/BillingRight.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "billing"
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                "type": "io.atlasarc.parity.fixtures.modules.shared.left.BillingLeft",
+                "sourceFile": "modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/BillingLeft.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": "billing"
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        }
+    ],
+    "evidenceIssues": [],
+    "evaluation": {
+        "verdict": "problems",
+        "sources": [
+            {
+                "id": "jvm:modules",
+                "backend": "jvm-bytecode",
+                "languages": [
+                    "java",
+                    "kotlin"
+                ],
+                "fresh": true
+            }
+        ],
+        "records": [],
+        "problemGroups": [
+            {
+                "analysisSourceId": "jvm:modules",
+                "id": 0,
+                "type": "architectural",
+                "members": [
+                    {
+                        "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                        "module": "billing"
+                    },
+                    {
+                        "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                        "module": "billing"
+                    }
+                ],
+                "edgeCount": 2
+            },
+            {
+                "analysisSourceId": "jvm:modules",
+                "id": 1,
+                "type": "architectural",
+                "members": [
+                    {
+                        "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                        "module": "orders"
+                    },
+                    {
+                        "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                        "module": "orders"
+                    }
+                ],
+                "edgeCount": 2
+            }
+        ],
+        "problemEdges": [
+            {
+                "analysisSourceId": "jvm:modules",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                    "module": "billing"
+                },
+                "target": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                    "module": "billing"
+                },
+                "uncoveredReferenceIds": [
+                    "ref-87a4ef8f32fab2edae18461e4b895f9b",
+                    "ref-eea4d68cdcddf4f660de838c6aa4e324"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "jvm:modules",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                    "module": "billing"
+                },
+                "target": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                    "module": "billing"
+                },
+                "uncoveredReferenceIds": [
+                    "ref-194beae50cbe4e82f3cb65a68c8c599e",
+                    "ref-f8e0a61b5d090499602e0004e588312e"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "jvm:modules",
+                "cycleGroupId": 1,
+                "source": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                    "module": "orders"
+                },
+                "target": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                    "module": "orders"
+                },
+                "uncoveredReferenceIds": [
+                    "ref-1bfa8fa7163dbfc399a1f4f771b18f86",
+                    "ref-70a268336bd842ee51346628d39117f2"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "jvm:modules",
+                "cycleGroupId": 1,
+                "source": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.right",
+                    "module": "orders"
+                },
+                "target": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.modules.shared.left",
+                    "module": "orders"
+                },
+                "uncoveredReferenceIds": [
+                    "ref-39ee34830cf321b20b1c073f22385be1",
+                    "ref-b2639c56dc9c1f5d207ebd98e0f1ed3f"
+                ],
+                "governedReferenceIds": []
+            }
+        ],
+        "issues": [],
+        "summary": {
+            "sourceCount": 1,
+            "recordCount": 0,
+            "activeRecordCount": 0,
+            "debtRecordCount": 0,
+            "resolvedRecordCount": 0,
+            "invalidRecordCount": 0,
+            "problemGroupCount": 2,
+            "problemEdgeCount": 4
+        }
+    }
+}

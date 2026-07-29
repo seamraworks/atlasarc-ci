@@ -1,0 +1,53 @@
+{
+  "modules": [
+    {
+      "source": "src/a/index.ts",
+      "dependencies": [
+        {
+          "module": "../b/index",
+          "resolved": "src/b/index.ts",
+          "dependencyTypes": ["local", "import"],
+          "valid": true
+        },
+        {
+          "module": "../b/index",
+          "resolved": "src/b/index.ts",
+          "dependencyTypes": ["local", "type-only"],
+          "valid": true
+        },
+        {
+          "module": "../c/index",
+          "resolved": "src/c/index.ts",
+          "dependencyTypes": ["local", "dynamic-import"],
+          "dynamic": true,
+          "valid": true
+        }
+      ],
+      "orphan": false
+    },
+    {
+      "source": "src/b/index.ts",
+      "dependencies": [
+        {
+          "module": "../a/index",
+          "resolved": "src/a/index.ts",
+          "dependencyTypes": ["local", "import"],
+          "valid": true
+        }
+      ],
+      "orphan": false
+    },
+    {
+      "source": "src/c/index.ts",
+      "dependencies": [
+        {
+          "module": "../a/index",
+          "resolved": "src/a/index.ts",
+          "dependencyTypes": ["local", "export"],
+          "valid": true
+        }
+      ],
+      "orphan": false
+    }
+  ]
+}

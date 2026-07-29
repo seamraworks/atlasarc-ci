@@ -1,0 +1,692 @@
+{
+    "schemaVersion": 1,
+    "sources": [
+        {
+            "id": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "languages": [
+                "java",
+                "kotlin"
+            ],
+            "supportedScopes": [
+                "member",
+                "package",
+                "reference",
+                "type"
+            ],
+            "fresh": true,
+            "includedJvmModules": []
+        },
+        {
+            "id": "typescript:parity",
+            "backend": "typescript-artifact",
+            "languages": [
+                "typescript"
+            ],
+            "supportedScopes": [
+                "reference",
+                "source-file",
+                "source-folder"
+            ],
+            "fresh": true,
+            "includedJvmModules": []
+        }
+    ],
+    "architectureUnits": [
+        {
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "language": "java",
+            "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+            "module": null
+        },
+        {
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "language": "java",
+            "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+            "module": null
+        },
+        {
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "language": "kotlin",
+            "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+            "module": null
+        },
+        {
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "language": "kotlin",
+            "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/a",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/b",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/c",
+            "module": null
+        }
+    ],
+    "references": [
+        {
+            "id": "ref-21c35913e5a2603fd9e1bd4b4f101483",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "callBoth",
+                "memberDescriptor": "()Ljava/lang/String;",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "callBack",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/jvm/java/left/JavaCaller;)I",
+                "module": null
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-32af45282ba425007070a7650672bd6c",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/c",
+                "type": null,
+                "sourceFile": "src/c/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "re-export",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-344953aa51680ed2fda6eed20be06a7a",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "kotlin",
+            "targetLanguage": "kotlin",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.left.KotlinLeft",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/left/KotlinLeft.kt",
+                "memberName": "call",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/jvm/kotlin/right/KotlinRight;)I",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.right.KotlinRight",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/right/KotlinRight.kt",
+                "memberName": "touch",
+                "memberDescriptor": "(Ljava/lang/String;)I",
+                "module": null
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-5b521949d20f856b0fa0482c5835296d",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "callBoth",
+                "memberDescriptor": "()Ljava/lang/String;",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "load",
+                "memberDescriptor": "(I)Ljava/lang/String;",
+                "module": null
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-6b7b645fc923a434971e75b931547bab",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/c",
+                "type": null,
+                "sourceFile": "src/c/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "dynamic-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-6f7080aeff03f1487923039dff2f521e",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-712a61f645bb9a50be6d16457e4746b7",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/b",
+                "type": null,
+                "sourceFile": "src/b/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "type-only-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-74dbc8eaa69e20e74d7ed13c820e06c3",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "kotlin",
+            "targetLanguage": "kotlin",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.right.KotlinRight",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/right/KotlinRight.kt",
+                "memberName": "call",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/jvm/kotlin/left/KotlinLeft;)I",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.left.KotlinLeft",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/left/KotlinLeft.kt",
+                "memberName": "touch",
+                "memberDescriptor": "()I",
+                "module": null
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-80c0cc1663464c1fa43f0768cad157f4",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "callBoth",
+                "memberDescriptor": "()Ljava/lang/String;",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "<init>",
+                "memberDescriptor": "(Ljava/lang/String;)V",
+                "module": null
+            },
+            "dependencyKind": "constructor-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-8a6e064f62980f2d134ca3b5c56d5e28",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "callBack",
+                "memberDescriptor": "(Lio/atlasarc/parity/fixtures/jvm/java/left/JavaCaller;)I",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "ping",
+                "memberDescriptor": "()I",
+                "module": null
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-a079c12f8854f4a83c6a6360f70d6249",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "callBoth",
+                "memberDescriptor": "()Ljava/lang/String;",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "value",
+                "memberDescriptor": "I",
+                "module": null
+            },
+            "dependencyKind": "field-access",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-a987c82f12e642245b8e52582efc34ce",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "kotlin",
+            "targetLanguage": "kotlin",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.left.KotlinLeft",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/left/KotlinLeft.kt",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.right.KotlinRight",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/right/KotlinRight.kt",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-b47a2353dfcface57fc76fb8dffc3a24",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/b",
+                "type": null,
+                "sourceFile": "src/b/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "runtime-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-b7ca174e6fabc10e176b62f2067baa2f",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "kotlin",
+            "targetLanguage": "kotlin",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.right.KotlinRight",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/right/KotlinRight.kt",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.kotlin.left.KotlinLeft",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/kotlin/left/KotlinLeft.kt",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "structural",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-c85da905b0da0cbb77dee818b158002d",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/b",
+                "type": null,
+                "sourceFile": "src/b/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "runtime-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-c92a5dea2890c95b1f388acb13a6db62",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "callBoth",
+                "memberDescriptor": "()Ljava/lang/String;",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "load",
+                "memberDescriptor": "(Ljava/lang/String;)Ljava/lang/String;",
+                "module": null
+            },
+            "dependencyKind": "method-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        },
+        {
+            "id": "ref-f8cc19632b37d11327ad5951092997ea",
+            "analysisSourceId": "jvm:parity",
+            "backend": "jvm-bytecode",
+            "sourceLanguage": "java",
+            "targetLanguage": "java",
+            "source": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.left",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.left.JavaCaller",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java",
+                "memberName": "callBoth",
+                "memberDescriptor": "()Ljava/lang/String;",
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "io.atlasarc.parity.fixtures.jvm.java.right",
+                "type": "io.atlasarc.parity.fixtures.jvm.java.right.OverloadedTarget",
+                "sourceFile": "jvm-src/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java",
+                "memberName": "<init>",
+                "memberDescriptor": "(I)V",
+                "module": null
+            },
+            "dependencyKind": "constructor-call",
+            "sourceMemberGovernanceEligible": true,
+            "targetMemberGovernanceEligible": true
+        }
+    ],
+    "evidenceIssues": [],
+    "evaluation": {
+        "verdict": "problems",
+        "sources": [
+            {
+                "id": "jvm:parity",
+                "backend": "jvm-bytecode",
+                "languages": [
+                    "java",
+                    "kotlin"
+                ],
+                "fresh": true
+            },
+            {
+                "id": "typescript:parity",
+                "backend": "typescript-artifact",
+                "languages": [
+                    "typescript"
+                ],
+                "fresh": true
+            }
+        ],
+        "records": [
+            {
+                "recordId": "java-left-to-right",
+                "analysisSourceId": "jvm:parity",
+                "status": "active",
+                "kind": "INTENTIONAL",
+                "matchedReferenceIds": [
+                    "ref-21c35913e5a2603fd9e1bd4b4f101483",
+                    "ref-5b521949d20f856b0fa0482c5835296d",
+                    "ref-80c0cc1663464c1fa43f0768cad157f4",
+                    "ref-a079c12f8854f4a83c6a6360f70d6249",
+                    "ref-c92a5dea2890c95b1f388acb13a6db62",
+                    "ref-f8cc19632b37d11327ad5951092997ea"
+                ]
+            },
+            {
+                "recordId": "typescript-a-to-b",
+                "analysisSourceId": "typescript:parity",
+                "status": "active",
+                "kind": "DEBT",
+                "matchedReferenceIds": [
+                    "ref-712a61f645bb9a50be6d16457e4746b7",
+                    "ref-c85da905b0da0cbb77dee818b158002d"
+                ]
+            }
+        ],
+        "problemGroups": [
+            {
+                "analysisSourceId": "jvm:parity",
+                "id": 0,
+                "type": "architectural",
+                "members": [
+                    {
+                        "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                        "module": null
+                    },
+                    {
+                        "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                        "module": null
+                    }
+                ],
+                "edgeCount": 2
+            },
+            {
+                "analysisSourceId": "typescript:parity",
+                "id": 0,
+                "type": "architectural",
+                "members": [
+                    {
+                        "architectureUnit": "src/a",
+                        "module": null
+                    },
+                    {
+                        "architectureUnit": "src/c",
+                        "module": null
+                    }
+                ],
+                "edgeCount": 2
+            }
+        ],
+        "problemEdges": [
+            {
+                "analysisSourceId": "jvm:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-344953aa51680ed2fda6eed20be06a7a",
+                    "ref-a987c82f12e642245b8e52582efc34ce"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "jvm:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.right",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "io.atlasarc.parity.fixtures.jvm.kotlin.left",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-74dbc8eaa69e20e74d7ed13c820e06c3",
+                    "ref-b7ca174e6fabc10e176b62f2067baa2f"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "typescript:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "src/a",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "src/c",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-6b7b645fc923a434971e75b931547bab"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "typescript:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "src/c",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "src/a",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-32af45282ba425007070a7650672bd6c"
+                ],
+                "governedReferenceIds": []
+            }
+        ],
+        "issues": [],
+        "summary": {
+            "sourceCount": 2,
+            "recordCount": 2,
+            "activeRecordCount": 2,
+            "debtRecordCount": 1,
+            "resolvedRecordCount": 0,
+            "invalidRecordCount": 0,
+            "problemGroupCount": 2,
+            "problemEdgeCount": 4
+        }
+    }
+}

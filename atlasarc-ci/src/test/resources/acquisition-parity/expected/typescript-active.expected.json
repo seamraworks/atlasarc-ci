@@ -1,0 +1,300 @@
+{
+    "schemaVersion": 1,
+    "sources": [
+        {
+            "id": "typescript:parity",
+            "backend": "typescript-artifact",
+            "languages": [
+                "typescript"
+            ],
+            "supportedScopes": [
+                "reference",
+                "source-file",
+                "source-folder"
+            ],
+            "fresh": true,
+            "includedJvmModules": []
+        }
+    ],
+    "architectureUnits": [
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/a",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/b",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/c",
+            "module": null
+        }
+    ],
+    "references": [
+        {
+            "id": "ref-32af45282ba425007070a7650672bd6c",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/c",
+                "type": null,
+                "sourceFile": "src/c/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "re-export",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-6b7b645fc923a434971e75b931547bab",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/c",
+                "type": null,
+                "sourceFile": "src/c/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "dynamic-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-712a61f645bb9a50be6d16457e4746b7",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/b",
+                "type": null,
+                "sourceFile": "src/b/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "type-only-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-b47a2353dfcface57fc76fb8dffc3a24",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/b",
+                "type": null,
+                "sourceFile": "src/b/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "runtime-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        },
+        {
+            "id": "ref-c85da905b0da0cbb77dee818b158002d",
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "sourceLanguage": "typescript",
+            "targetLanguage": "typescript",
+            "source": {
+                "architectureUnit": "src/a",
+                "type": null,
+                "sourceFile": "src/a/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "target": {
+                "architectureUnit": "src/b",
+                "type": null,
+                "sourceFile": "src/b/index.ts",
+                "memberName": null,
+                "memberDescriptor": null,
+                "module": null
+            },
+            "dependencyKind": "runtime-import",
+            "sourceMemberGovernanceEligible": false,
+            "targetMemberGovernanceEligible": false
+        }
+    ],
+    "evidenceIssues": [],
+    "evaluation": {
+        "verdict": "problems",
+        "sources": [
+            {
+                "id": "typescript:parity",
+                "backend": "typescript-artifact",
+                "languages": [
+                    "typescript"
+                ],
+                "fresh": true
+            }
+        ],
+        "records": [
+            {
+                "recordId": "typescript-exact",
+                "analysisSourceId": "typescript:parity",
+                "status": "active",
+                "kind": "DEBT",
+                "matchedReferenceIds": [
+                    "ref-c85da905b0da0cbb77dee818b158002d"
+                ]
+            }
+        ],
+        "problemGroups": [
+            {
+                "analysisSourceId": "typescript:parity",
+                "id": 0,
+                "type": "architectural",
+                "members": [
+                    {
+                        "architectureUnit": "src/a",
+                        "module": null
+                    },
+                    {
+                        "architectureUnit": "src/b",
+                        "module": null
+                    },
+                    {
+                        "architectureUnit": "src/c",
+                        "module": null
+                    }
+                ],
+                "edgeCount": 4
+            }
+        ],
+        "problemEdges": [
+            {
+                "analysisSourceId": "typescript:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "src/a",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "src/b",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-712a61f645bb9a50be6d16457e4746b7"
+                ],
+                "governedReferenceIds": [
+                    "ref-c85da905b0da0cbb77dee818b158002d"
+                ]
+            },
+            {
+                "analysisSourceId": "typescript:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "src/a",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "src/c",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-6b7b645fc923a434971e75b931547bab"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "typescript:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "src/b",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "src/a",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-b47a2353dfcface57fc76fb8dffc3a24"
+                ],
+                "governedReferenceIds": []
+            },
+            {
+                "analysisSourceId": "typescript:parity",
+                "cycleGroupId": 0,
+                "source": {
+                    "architectureUnit": "src/c",
+                    "module": null
+                },
+                "target": {
+                    "architectureUnit": "src/a",
+                    "module": null
+                },
+                "uncoveredReferenceIds": [
+                    "ref-32af45282ba425007070a7650672bd6c"
+                ],
+                "governedReferenceIds": []
+            }
+        ],
+        "issues": [],
+        "summary": {
+            "sourceCount": 1,
+            "recordCount": 1,
+            "activeRecordCount": 1,
+            "debtRecordCount": 1,
+            "resolvedRecordCount": 0,
+            "invalidRecordCount": 0,
+            "problemGroupCount": 1,
+            "problemEdgeCount": 4
+        }
+    }
+}

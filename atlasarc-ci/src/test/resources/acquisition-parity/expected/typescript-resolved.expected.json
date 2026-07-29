@@ -1,0 +1,79 @@
+{
+    "schemaVersion": 1,
+    "sources": [
+        {
+            "id": "typescript:parity",
+            "backend": "typescript-artifact",
+            "languages": [
+                "typescript"
+            ],
+            "supportedScopes": [
+                "reference",
+                "source-file",
+                "source-folder"
+            ],
+            "fresh": true,
+            "includedJvmModules": []
+        }
+    ],
+    "architectureUnits": [
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/a",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/b",
+            "module": null
+        },
+        {
+            "analysisSourceId": "typescript:parity",
+            "backend": "typescript-artifact",
+            "language": "typescript",
+            "architectureUnit": "src/c",
+            "module": null
+        }
+    ],
+    "references": [],
+    "evidenceIssues": [],
+    "evaluation": {
+        "verdict": "clean",
+        "sources": [
+            {
+                "id": "typescript:parity",
+                "backend": "typescript-artifact",
+                "languages": [
+                    "typescript"
+                ],
+                "fresh": true
+            }
+        ],
+        "records": [
+            {
+                "recordId": "typescript-exact",
+                "analysisSourceId": "typescript:parity",
+                "status": "resolved",
+                "kind": "DEBT",
+                "matchedReferenceIds": []
+            }
+        ],
+        "problemGroups": [],
+        "problemEdges": [],
+        "issues": [],
+        "summary": {
+            "sourceCount": 1,
+            "recordCount": 1,
+            "activeRecordCount": 0,
+            "debtRecordCount": 0,
+            "resolvedRecordCount": 1,
+            "invalidRecordCount": 0,
+            "problemGroupCount": 0,
+            "problemEdgeCount": 0
+        }
+    }
+}

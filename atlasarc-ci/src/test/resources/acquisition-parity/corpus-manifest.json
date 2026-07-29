@@ -1,0 +1,34 @@
+{
+    "corpusVersion": 1,
+    "contractSchemaVersion": 1,
+    "authority": "https://github.com/seamraworks/atlasarc-ci/tree/main/atlasarc-ci/src/test/resources/acquisition-parity",
+    "normalization": [
+        "canonical collection order",
+        "portable repository-relative paths and line endings",
+        "exclude orchestrator-owned caseSensitive, evaluationComplete, and repositoryComplete",
+        "exclude diagnostic prose, revisions, producer versions, opaque node keys, and redundant type inventory"
+    ],
+    "files": {
+        "src/test/java/io/atlasarc/parity/fixtures/jvm/java/left/JavaCaller.java": "a635c305b388e6fe553c2dfc3698a6c5730a0afb96f51236a55c5823b1a87027",
+        "src/test/java/io/atlasarc/parity/fixtures/jvm/java/right/OverloadedTarget.java": "14cd1fcede7c10002bd60d05cac7ff9ec0c3fc6faf80209bbe66406df25f6657",
+        "src/test/kotlin/io/atlasarc/parity/AcquisitionParityContract.kt": "745fc991a39980022a20374094b387a93ed0ce200c790d9d947be967e380dc07",
+        "src/test/kotlin/io/atlasarc/parity/fixtures/jvm/kotlin/left/KotlinLeft.kt": "5904bc60d376dc3e9e70cc0cc821ff00117b8197046374ee82315a271a6f28c9",
+        "src/test/kotlin/io/atlasarc/parity/fixtures/jvm/kotlin/right/KotlinRight.kt": "cc8cf8ecfea401539571ad00f81ac3366eb5fb59c895ff269c3c2923dc086e1c",
+        "src/test/resources/acquisition-parity/README.md": "04a89884b976f95c1d6554791695422e15ecd9de70e70a5db7a8378afcccd1b0",
+        "src/test/resources/acquisition-parity/expected/jvm-partial.expected.json": "2ab909bdea01b9f852ed4572dc3f9254f3d478cdc1f58bf1532ae4a8cd339d3d",
+        "src/test/resources/acquisition-parity/expected/mixed.expected.json": "a30d6ecc5e552363c02839332769d0f3281e61ed8edf8bbf72a2bf70c69e36c5",
+        "src/test/resources/acquisition-parity/expected/modules.expected.json": "2be365f6c7e0a7c859e2c6c3abbe4b02e00a7bd9b4b871baabcb969b1a073d1a",
+        "src/test/resources/acquisition-parity/expected/typescript-active.expected.json": "dfdf46c616b73065aee2fd20dcceaf53f8c73b98fbab1983b2964417776ae97b",
+        "src/test/resources/acquisition-parity/expected/typescript-resolved.expected.json": "f4b43a1a88d7e5e78aa85b7775ed7f1890dd0496122b0b64a706d03ac13f98b0",
+        "src/test/resources/acquisition-parity/expected/typescript-stale.expected.json": "425965f7890c5739dbf50461b12993c9d2400fbf6c841ee5484cedc2f173cc96",
+        "src/test/resources/acquisition-parity/modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/BillingLeft.java": "9cb60a5a504d1d8577925d4741f515a5093ea28e751a902ccf886f1b384bd5c9",
+        "src/test/resources/acquisition-parity/modules/billing/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/BillingRight.java": "d023dc54af81be238bd4fbeca07c3045b80b6477f339cbf23f805029c06f1a05",
+        "src/test/resources/acquisition-parity/modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/left/OrdersLeft.java": "fdd2e3c5fb7df4a5882b98067c0bbeabaa0a1461db6762a04cd1fa014bdddfc1",
+        "src/test/resources/acquisition-parity/modules/orders/src/main/java/io/atlasarc/parity/fixtures/modules/shared/right/OrdersRight.java": "4fc0458cd3122e17e7364b1b1b388e0d566bd4b3a8ea869986f4ab0319fa4c84",
+        "src/test/resources/acquisition-parity/typescript/active.json": "ca387c8f714a31a887687b80521c08aa1231050cf064d4244db5f31a3aa8fcae",
+        "src/test/resources/acquisition-parity/typescript/project/src/a/index.ts": "89ef043d10d4098dd6e68010b1cb95e39336f65b21cba1cc5caa8d99cbae7184",
+        "src/test/resources/acquisition-parity/typescript/project/src/b/index.ts": "3f70433ee818c9cf81f755cbc69bdc50593b1afd1fa4331aff861960de37af4d",
+        "src/test/resources/acquisition-parity/typescript/project/src/c/index.ts": "1b9fcfbea782c82abb7935621dec65528fc8d5533d2fc11069a0744b470e85d5",
+        "src/test/resources/acquisition-parity/typescript/resolved.json": "dc5596f7866b37eeef0a451654543129d86994d8caa9978eb28825476f0e3efe"
+    }
+}
