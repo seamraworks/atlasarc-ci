@@ -469,6 +469,8 @@ attached `standalone` ZIP.
 Release builds attach the standalone JAR and ZIP to the `io.atlasarc:atlasarc-ci:<version>` Maven
 component. Releases run from CircleCI and remain behind explicit patch, minor, major, or as-is
 approval jobs. No artifact is published merely by pushing a commit or running the local build.
+Maintainers must follow [RELEASING.md](RELEASING.md), especially the rule that an already-committed
+version bump uses the as-is gate and that the GitHub Release is a separate post-deploy step.
 
 ## Compatibility, security, and license
 

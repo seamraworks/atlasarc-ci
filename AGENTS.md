@@ -36,3 +36,10 @@ or exit codes require deterministic regression coverage. Keep Java, Kotlin, Type
 multi-module split-package, stale-evidence, and invalid-record paths fail-closed.
 
 Use semantic commits in the form `action(subject): summary`; do not add sign-off trailers.
+
+## Releases
+
+Before changing any version or approving a CircleCI gate, read `RELEASING.md`. This repository
+releases the public AtlasArc.io CI Maven artifacts, not the separately versioned IntelliJ plugin.
+If the desired reactor version is already committed, use the as-is approval gate. Maven Central,
+the Git tag, and the GitHub Release are distinct verification steps.

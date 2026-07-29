@@ -22,3 +22,5 @@ Keep the module boundary intact:
 Changes to schemas, stable IDs, record matching, output formats, or exit codes need regression
 tests and an explicit compatibility note. Do not put absolute paths, governance reasons, or ticket
 contents into machine output fixtures.
+
+Maintainers preparing a coordinated release must follow [RELEASING.md](RELEASING.md).
