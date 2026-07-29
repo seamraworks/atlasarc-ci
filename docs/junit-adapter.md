@@ -9,18 +9,10 @@ The configured evaluator still uses ArchUnit's importer internally when it acqui
 The difference is ownership: this adapter lets evaluator configuration own acquisition, while the
 native ArchUnit adapter starts with classes already imported by the consuming test suite.
 
-> `atlasarc-junit` is currently a source preview. Build and install this reactor locally until the
-> next coordinated release is verified on Maven Central.
-
 ## Add the adapter
 
-From this repository:
-
-```shell
-mvn install -DskipTests
-```
-
-Use the reactor version in the consuming project's test scope.
+`io.atlasarc:atlasarc-junit:1.4.0` is published on Maven Central. Add it in the consuming project's
+test scope.
 
 Maven:
 
@@ -28,7 +20,7 @@ Maven:
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-junit</artifactId>
-  <version>${atlasarc-ci.version}</version>
+  <version>1.4.0</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -36,7 +28,7 @@ Maven:
 Gradle:
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-junit:$atlasarcCiVersion")
+testImplementation("io.atlasarc:atlasarc-junit:1.4.0")
 ```
 
 ## Produce current evidence first

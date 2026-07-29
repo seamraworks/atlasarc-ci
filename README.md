@@ -74,7 +74,7 @@ front and receive a native `ArchRule`.
 - [Configure the evaluator](docs/evaluator-configuration.md) explains `evaluator.json`, JVM and
   TypeScript evidence, module identity, path resolution, freshness, output, and troubleshooting.
 - [Run the evaluator from JUnit](docs/junit-adapter.md) explains the in-process assertion, build
-  ordering, source-preview installation, and failure contract.
+  ordering, dependency setup, and failure contract.
 - [Define repository analysis scope](docs/repository-scope.md) explains `scope.json`, portable
   JVM/TypeScript selectors, module semantics, fail-closed behavior, and audit output.
 - [Govern cycle decisions](docs/governance-decisions.md) explains `cycles.json`, the decision
@@ -93,37 +93,29 @@ contracts.
 [![Verified examples](https://github.com/seamraworks/atlasarc-ci/actions/workflows/verified-examples.yml/badge.svg)](https://github.com/seamraworks/atlasarc-ci/actions/workflows/verified-examples.yml)
 
 The [verified Java and TypeScript examples](examples/verified-governance/README.md) exercise the
-currently published integrations as users consume them. Six expected-outcome jobs prove that the standalone
-JVM evaluator, ArchUnit adapter, and standalone TypeScript evaluator reject an ungoverned
-cycle and pass the same cycle after a reviewed repository decision. The jobs publish nothing and
-stay green only when rejection happens for the intended AtlasArc.io cycle reason.
+published integrations as users consume them. Eight expected-outcome jobs prove that the JUnit
+adapter, standalone JVM evaluator, ArchUnit adapter, and standalone TypeScript evaluator reject an
+ungoverned cycle and pass the same cycle after a reviewed repository decision. The jobs publish
+nothing and stay green only when rejection happens for the intended AtlasArc.io cycle reason.
 
 ## Run the configured evaluator from JUnit
 
-The source tree includes `io.atlasarc:atlasarc-junit`, an in-process JUnit 5 assertion over the
-same configured evaluator used by the CLI. It can therefore evaluate Java, Kotlin, TypeScript, or a
-mixed-stack `evaluator.json` in an ordinary test without adopting ArchUnit's test API.
-
-The adapter is a source preview until the next coordinated release is visible on Maven Central.
-Build and install the reactor locally before trying the coordinate from this checkout:
-
-```shell
-mvn install -DskipTests
-```
-
-Then add the reactor version as a test dependency:
+`io.atlasarc:atlasarc-junit:1.4.0` is an in-process JUnit 5 assertion over the same configured
+evaluator used by the CLI. It can therefore evaluate Java, Kotlin, TypeScript, or a mixed-stack
+`evaluator.json` in an ordinary test without adopting ArchUnit's test API. Add it as a test
+dependency:
 
 ```xml
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-junit</artifactId>
-  <version>${atlasarc-ci.version}</version>
+  <version>1.4.0</version>
   <scope>test</scope>
 </dependency>
 ```
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-junit:$atlasarcCiVersion")
+testImplementation("io.atlasarc:atlasarc-junit:1.4.0")
 ```
 
 After the build has compiled JVM classes and/or generated the configured dependency-cruiser JSON,
@@ -152,10 +144,10 @@ for build-order and mixed-stack details.
 
 ## Install the standalone evaluator
 
-AtlasArc.io CI `1.3.0` is published on Maven Central and requires JDK 21 or newer. Use the
-[standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.3.0/atlasarc-ci-1.3.0-standalone.jar)
+AtlasArc.io CI `1.4.0` is published on Maven Central and requires JDK 21 or newer. Use the
+[standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.0/atlasarc-ci-1.4.0-standalone.jar)
 directly, or download the
-[standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.3.0/atlasarc-ci-1.3.0-standalone.zip)
+[standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.0/atlasarc-ci-1.4.0-standalone.zip)
 for the executable, checksum, guides, schemas, examples, license, and notices.
 
 To build the same distribution from source:
@@ -201,7 +193,7 @@ Save this evaluator configuration as `.atlasarc/evaluator.json`:
 Compile the target project, then run:
 
 ```shell
-java -jar <path-to>/atlasarc-ci-1.3.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
   --config .atlasarc/evaluator.json \
   --format human
 ```
@@ -269,7 +261,7 @@ artifact:
 
 ```shell
 npx depcruise --output-type json src > .atlasarc/depgraph.json
-java -jar <path-to>/atlasarc-ci-1.3.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
   --backend typescript-artifact \
   --source-id typescript:frontend \
   --root . \
@@ -324,7 +316,7 @@ invalid record in the covered JVM evidence still fails closed. Use the JUnit ada
 evaluator with both evidence sources when one integration needs the complete mixed-stack verdict.
 
 The ArchUnit adapter is published on Maven Central as
-`io.atlasarc:atlasarc-archunit:1.3.0`.
+`io.atlasarc:atlasarc-archunit:1.4.0`.
 
 Maven:
 
@@ -332,7 +324,7 @@ Maven:
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-archunit</artifactId>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
   <scope>test</scope>
 </dependency>
 <dependency>
@@ -346,7 +338,7 @@ Maven:
 Gradle:
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-archunit:1.3.0")
+testImplementation("io.atlasarc:atlasarc-archunit:1.4.0")
 testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
 ```
 
@@ -435,7 +427,7 @@ All artifacts use the `io.atlasarc` group, share one version, and are released t
 Adapters can depend only on the portable engine:
 
 ```kotlin
-implementation("io.atlasarc:atlasarc-governance-core:1.3.0")
+implementation("io.atlasarc:atlasarc-governance-core:1.4.0")
 ```
 
 That coordinate is the current cycle-governance release and includes the repository-scope APIs

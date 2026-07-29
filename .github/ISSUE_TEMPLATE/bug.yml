@@ -13,7 +13,7 @@ body:
     id: surface
     attributes:
       label: Surface
-      options: [Standalone CLI, ArchUnit adapter, Governance core]
+      options: [JUnit adapter, Standalone CLI, ArchUnit adapter, Governance core]
     validations:
       required: true
   - type: textarea
