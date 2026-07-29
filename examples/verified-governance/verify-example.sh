@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 <jvm|typescript> <standalone|archunit> <ungoverned|governed>" >&2
+  echo "Usage: $0 <jvm|typescript> <junit|standalone|archunit> <ungoverned|governed>" >&2
   exit 2
 }
 
@@ -12,7 +12,7 @@ integration="$2"
 scenario="$3"
 
 case "$language:$integration" in
-  jvm:standalone|jvm:archunit|typescript:standalone) ;;
+  jvm:junit|jvm:standalone|jvm:archunit|typescript:standalone) ;;
   *) usage ;;
 esac
 case "$scenario" in
@@ -94,18 +94,29 @@ if [[ "$integration" == "standalone" ]]; then
     exit 1
   fi
 else
-  proof_file="$work_root/target/archunit.log"
+  proof_file="$work_root/target/$integration.log"
   mkdir -p "$work_root/target"
+  test_class="demo.architecture.CycleGovernanceTest"
+  if [[ "$integration" == "junit" ]]; then
+    test_class="demo.architecture.ConfiguredEvaluatorTest"
+  fi
   set +e
-  mvn --quiet --file "$work_root/pom.xml" -Dtest=demo.architecture.CycleGovernanceTest test \
+  mvn --quiet --file "$work_root/pom.xml" -Dtest="$test_class" test \
     >"$proof_file" 2>&1
   actual_exit=$?
   set -e
 
-  if [[ "$scenario" == "ungoverned" ]] && ! grep -q 'AtlasArc.io found an ungoverned cycle' "$proof_file"; then
-    echo "ArchUnit did not report the intended AtlasArc.io cycle violation:" >&2
-    cat "$proof_file" >&2
-    exit 1
+  if [[ "$scenario" == "ungoverned" ]]; then
+    if [[ "$integration" == "junit" ]]; then
+      expected_message='AtlasArc.io cycle governance found unaccepted cycles'
+    else
+      expected_message='AtlasArc.io found an ungoverned cycle'
+    fi
+    if ! grep -q "$expected_message" "$proof_file" || ! grep -q 'demo\.orders' "$proof_file"; then
+      echo "$integration did not report the intended AtlasArc.io cycle violation:" >&2
+      cat "$proof_file" >&2
+      exit 1
+    fi
   fi
 fi
 

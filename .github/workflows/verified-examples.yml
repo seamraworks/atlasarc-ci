@@ -24,6 +24,14 @@ jobs:
       max-parallel: 3
       matrix:
         include:
+          - name: Java · JUnit · rejects ungoverned cycle
+            language: jvm
+            integration: junit
+            scenario: ungoverned
+          - name: Java · JUnit · allows governed cycle
+            language: jvm
+            integration: junit
+            scenario: governed
           - name: Java · Standalone · rejects ungoverned cycle
             language: jvm
             integration: standalone

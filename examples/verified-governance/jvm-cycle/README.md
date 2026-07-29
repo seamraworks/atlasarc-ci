@@ -1,7 +1,7 @@
-# Java cycle: standalone and ArchUnit
+# Java cycle: JUnit, standalone, and ArchUnit
 
 `demo.orders` and `demo.billing` deliberately depend on each other. The same Maven project supports
-both AtlasArc.io CI enforcement paths.
+all three AtlasArc.io CI enforcement paths.
 
 Start in this directory, create a Git repository if this is a standalone copy, and compile current
 bytecode:
@@ -13,30 +13,32 @@ mkdir -p .atlasarc/governance
 cp scenarios/ungoverned-cycles.json .atlasarc/governance/cycles.json
 ```
 
-Download `atlasarc-ci-1.3.0-standalone.jar` from the
-[1.3.0 release](https://github.com/seamraworks/atlasarc-ci/releases/tag/1.3.0), then prove the
+Download `atlasarc-ci-1.4.0-standalone.jar` from the
+[1.4.0 release](https://github.com/seamraworks/atlasarc-ci/releases/tag/1.4.0), then prove the
 standalone gate rejects the cycle with exit `1`:
 
 ```shell
-java -jar <path-to>/atlasarc-ci-1.3.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
   --config .atlasarc/evaluator.json --format human
 ```
 
-The ArchUnit test expresses the same gate in the normal test lifecycle and fails for the same
-ungoverned cycle:
+The ordinary JUnit test and the native ArchUnit rule express the same gate in the normal test
+lifecycle and fail for the same ungoverned cycle. Run them independently with:
 
 ```shell
-mvn test
+mvn -Dtest=demo.architecture.ConfiguredEvaluatorTest test
+mvn -Dtest=demo.architecture.CycleGovernanceTest test
 ```
 
 Now install the reviewed Debt decision and repeat both commands:
 
 ```shell
 cp scenarios/governed-cycles.json .atlasarc/governance/cycles.json
-mvn test
-java -jar <path-to>/atlasarc-ci-1.3.0-standalone.jar evaluate \
+mvn -Dtest=demo.architecture.ConfiguredEvaluatorTest test
+mvn -Dtest=demo.architecture.CycleGovernanceTest test
+java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
   --config .atlasarc/evaluator.json --format human
 ```
 
-Both integrations now pass. The dependency remains in the structural code; the decision removes
+All three integrations now pass. The dependency remains in the structural code; the decision removes
 the accepted `demo.orders` → `demo.billing` references only from the cycle problem graph.
