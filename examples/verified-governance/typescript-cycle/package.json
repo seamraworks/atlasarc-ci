@@ -9,6 +9,6 @@
   },
   "devDependencies": {
     "dependency-cruiser": "18.1.0",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   }
 }
