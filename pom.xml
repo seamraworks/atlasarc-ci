@@ -65,7 +65,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputTimestamp>2026-07-21T16:48:48Z</project.build.outputTimestamp>
     <maven.compiler.release>21</maven.compiler.release>
-    <kotlin.version>2.2.0</kotlin.version>
+    <kotlin.version>2.4.10</kotlin.version>
     <kotlinx.serialization.version>1.7.3</kotlinx.serialization.version>
     <archunit.version>1.4.2</archunit.version>
     <junit.version>5.10.2</junit.version>
@@ -204,7 +204,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.4</version>
+        <version>3.5.6</version>
         <configuration>
           <useModulePath>false</useModulePath>
           <systemPropertyVariables>
@@ -215,7 +215,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.1</version>
         <configuration>
           <archive>
             <manifestEntries>
