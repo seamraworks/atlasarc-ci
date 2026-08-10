@@ -13,12 +13,12 @@ mkdir -p .atlasarc/governance
 cp scenarios/ungoverned-cycles.json .atlasarc/governance/cycles.json
 ```
 
-Download `atlasarc-ci-1.4.0-standalone.jar` from the
-[1.4.0 release](https://github.com/seamraworks/atlasarc-ci/releases/tag/1.4.0), then prove the
+Download `atlasarc-ci-1.4.1-standalone.jar` from the
+[1.4.1 release](https://github.com/seamraworks/atlasarc-ci/releases/tag/1.4.1), then prove the
 standalone gate rejects the cycle with exit `1`:
 
 ```shell
-java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.1-standalone.jar evaluate \
   --config .atlasarc/evaluator.json --format human
 ```
 
@@ -36,7 +36,7 @@ Now install the reviewed Debt decision and repeat both commands:
 cp scenarios/governed-cycles.json .atlasarc/governance/cycles.json
 mvn -Dtest=demo.architecture.ConfiguredEvaluatorTest test
 mvn -Dtest=demo.architecture.CycleGovernanceTest test
-java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.1-standalone.jar evaluate \
   --config .atlasarc/evaluator.json --format human
 ```
 

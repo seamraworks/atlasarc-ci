@@ -100,7 +100,7 @@ nothing and stay green only when rejection happens for the intended AtlasArc.io 
 
 ## Run the configured evaluator from JUnit
 
-`io.atlasarc:atlasarc-junit:1.4.0` is an in-process JUnit Jupiter assertion over the same configured
+`io.atlasarc:atlasarc-junit:1.4.1` is an in-process JUnit Jupiter assertion over the same configured
 evaluator used by the CLI. It can therefore evaluate Java, Kotlin, TypeScript, or a mixed-stack
 `evaluator.json` in an ordinary test without adopting ArchUnit's test API. Add it as a test
 dependency:
@@ -109,14 +109,19 @@ dependency:
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-junit</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <scope>test</scope>
 </dependency>
 ```
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-junit:1.4.0")
+testImplementation("io.atlasarc:atlasarc-junit:1.4.1")
 ```
+
+Release 1.4.1 uses JUnit Jupiter 6.1.2. When the same test classpath also includes the native
+ArchUnit integration, import `org.junit:junit-bom:6.1.2` so ArchUnit's JUnit Platform dependencies
+are aligned with the adapter. The [verified Java example](examples/verified-governance/jvm-cycle/pom.xml)
+shows the Maven setup; Gradle builds can use `testImplementation(platform("org.junit:junit-bom:6.1.2"))`.
 
 After the build has compiled JVM classes and/or generated the configured dependency-cruiser JSON,
 one ordinary JUnit test runs the gate:
@@ -144,10 +149,10 @@ for build-order and mixed-stack details.
 
 ## Install the standalone evaluator
 
-AtlasArc.io CI `1.4.0` is published on Maven Central and requires Java 21 or newer. Use the
-[standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.0/atlasarc-ci-1.4.0-standalone.jar)
+AtlasArc.io CI `1.4.1` is published on Maven Central and requires Java 17 or newer. Use the
+[standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.1/atlasarc-ci-1.4.1-standalone.jar)
 directly, or download the
-[standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.0/atlasarc-ci-1.4.0-standalone.zip)
+[standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.1/atlasarc-ci-1.4.1-standalone.zip)
 for the executable, checksum, guides, schemas, examples, license, and notices.
 
 To build the same distribution from source:
@@ -193,7 +198,7 @@ Save this evaluator configuration as `.atlasarc/evaluator.json`:
 Compile the target project, then run:
 
 ```shell
-java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.1-standalone.jar evaluate \
   --config .atlasarc/evaluator.json \
   --format human
 ```
@@ -261,7 +266,7 @@ artifact:
 
 ```shell
 npx depcruise --output-type json src > .atlasarc/depgraph.json
-java -jar <path-to>/atlasarc-ci-1.4.0-standalone.jar evaluate \
+java -jar <path-to>/atlasarc-ci-1.4.1-standalone.jar evaluate \
   --backend typescript-artifact \
   --source-id typescript:frontend \
   --root . \
@@ -316,7 +321,7 @@ invalid record in the covered JVM evidence still fails closed. Use the JUnit ada
 evaluator with both evidence sources when one integration needs the complete mixed-stack verdict.
 
 The ArchUnit adapter is published on Maven Central as
-`io.atlasarc:atlasarc-archunit:1.4.0`.
+`io.atlasarc:atlasarc-archunit:1.4.1`.
 
 Maven:
 
@@ -324,13 +329,13 @@ Maven:
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-archunit</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <scope>test</scope>
 </dependency>
 <dependency>
   <groupId>com.tngtech.archunit</groupId>
   <artifactId>archunit-junit5</artifactId>
-  <version>1.4.2</version>
+  <version>1.5.0</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -338,8 +343,8 @@ Maven:
 Gradle:
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-archunit:1.4.0")
-testImplementation("com.tngtech.archunit:archunit-junit5:1.4.2")
+testImplementation("io.atlasarc:atlasarc-archunit:1.4.1")
+testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
 ```
 
 Java recipe for a module-less project:
@@ -427,7 +432,7 @@ All artifacts use the `io.atlasarc` group, share one version, and are released t
 Adapters can depend only on the portable engine:
 
 ```kotlin
-implementation("io.atlasarc:atlasarc-governance-core:1.4.0")
+implementation("io.atlasarc:atlasarc-governance-core:1.4.1")
 ```
 
 That coordinate is the current cycle-governance release and includes the repository-scope APIs

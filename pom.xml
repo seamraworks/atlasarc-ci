@@ -136,7 +136,7 @@
           <artifactId>dokka-maven-plugin</artifactId>
           <version>${dokka.version}</version>
           <configuration>
-            <jdkVersion>21</jdkVersion>
+            <jdkVersion>17</jdkVersion>
             <offlineMode>true</offlineMode>
             <sourceDirectories>
               <dir>${project.basedir}/src/main/kotlin</dir>

@@ -11,7 +11,7 @@ native ArchUnit adapter starts with classes already imported by the consuming te
 
 ## Add the adapter
 
-`io.atlasarc:atlasarc-junit:1.4.0` is published on Maven Central. Add it in the consuming project's
+`io.atlasarc:atlasarc-junit:1.4.1` is published on Maven Central. Add it in the consuming project's
 test scope.
 
 Maven:
@@ -20,7 +20,7 @@ Maven:
 <dependency>
   <groupId>io.atlasarc</groupId>
   <artifactId>atlasarc-junit</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -28,8 +28,35 @@ Maven:
 Gradle:
 
 ```kotlin
-testImplementation("io.atlasarc:atlasarc-junit:1.4.0")
+testImplementation("io.atlasarc:atlasarc-junit:1.4.1")
 ```
+
+## Align a shared JUnit and ArchUnit test classpath
+
+Release 1.4.1 uses JUnit Jupiter 6.1.2. If the project also uses AtlasArc's native ArchUnit rule,
+import the matching JUnit BOM so ArchUnit's JUnit Platform engine and the configured-evaluator
+assertion stay on one platform version:
+
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit</groupId>
+      <artifactId>junit-bom</artifactId>
+      <version>6.1.2</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+```
+
+```kotlin
+testImplementation(platform("org.junit:junit-bom:6.1.2"))
+```
+
+The BOM is unnecessary when another dependency-management layer already aligns every JUnit
+Jupiter and JUnit Platform artifact to 6.1.2.
 
 ## Produce current evidence first
 
