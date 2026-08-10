@@ -64,7 +64,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputTimestamp>2026-07-21T16:48:48Z</project.build.outputTimestamp>
-    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
     <kotlin.version>2.4.10</kotlin.version>
     <kotlinx.serialization.version>1.11.0</kotlinx.serialization.version>
     <archunit.version>1.5.0</archunit.version>
@@ -159,7 +159,7 @@
         <artifactId>kotlin-maven-plugin</artifactId>
         <version>${kotlin.version}</version>
         <configuration>
-          <jvmTarget>21</jvmTarget>
+          <jvmTarget>17</jvmTarget>
           <javaParameters>true</javaParameters>
           <compilerPlugins>
             <plugin>kotlinx-serialization</plugin>
@@ -242,7 +242,7 @@
             <goals><goal>enforce</goal></goals>
             <configuration>
               <rules>
-                <requireJavaVersion><version>[21,)</version></requireJavaVersion>
+                <requireJavaVersion><version>[17,)</version></requireJavaVersion>
                 <requireMavenVersion><version>[3.9,)</version></requireMavenVersion>
               </rules>
             </configuration>

@@ -4,13 +4,13 @@ orbs:
   github-maven-deploy: github-maven-deploy/github-maven-deploy@1.3.2
 
 executors:
-  jdk21:
+  jdk17:
     docker:
-      - image: cimg/openjdk:21.0
+      - image: cimg/openjdk:17.0
 
 jobs:
   build-and-test:
-    executor: jdk21
+    executor: jdk17
     steps:
       # Seamra Works disables GitHub deploy keys. This public-source checkout avoids granting a
       # user key while still pinning the workspace to the exact commit that triggered the pipeline.
@@ -56,7 +56,7 @@ jobs:
           path: artifacts/junit
 
 mvn-deploy-command: &mvn-deploy-command
-  executor: jdk21
+  executor: jdk17
   mvn-deploy-command: >-
     mvn -s .circleci/maven-central-settings.xml --batch-mode clean deploy
     -Ppublish-cli -DdeployAtEnd=true -DperformRelease=true -DskipTests -Djacoco.skip=true

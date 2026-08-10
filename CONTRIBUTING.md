@@ -5,7 +5,7 @@ licensed under Apache License 2.0.
 
 ## Development
 
-Use JDK 21 or newer. Run the complete local gate before opening a pull request:
+Use JDK 17 or newer. Run the complete local gate before opening a pull request:
 
 ```shell
 mvn verify -Ppublish-cli

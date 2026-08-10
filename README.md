@@ -144,7 +144,7 @@ for build-order and mixed-stack details.
 
 ## Install the standalone evaluator
 
-AtlasArc.io CI `1.4.0` is published on Maven Central and requires JDK 21 or newer. Use the
+AtlasArc.io CI `1.4.0` is published on Maven Central and requires Java 21 or newer. Use the
 [standalone JAR](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.0/atlasarc-ci-1.4.0-standalone.jar)
 directly, or download the
 [standalone ZIP](https://repo.maven.apache.org/maven2/io/atlasarc/atlasarc-ci/1.4.0/atlasarc-ci-1.4.0-standalone.zip)
@@ -461,7 +461,7 @@ never run implicitly by evaluation. Only committed repository governance can aff
 mvn verify -Ppublish-cli
 ```
 
-The build requires JDK 21. The regular `mvn verify` gate runs the complete test suite, checks module
+The build requires JDK 17. The regular `mvn verify` gate runs the complete test suite, checks module
 boundaries, and creates the source and API-documentation companions required for Maven Central. The
 `publish-cli` profile additionally builds the executable `standalone` JAR, its checksum, and the
 attached `standalone` ZIP.

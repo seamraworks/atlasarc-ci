@@ -25,7 +25,7 @@ read-only.
 
 ## Verification
 
-Use JDK 21 or newer and run:
+Use JDK 17 or newer and run:
 
 ```text
 mvn verify -Ppublish-cli
