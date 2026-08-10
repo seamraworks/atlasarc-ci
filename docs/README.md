@@ -9,7 +9,7 @@ Use these guides when you are ready to configure or operate the gate:
 | Guide | Use it when |
 |---|---|
 | [Configure the evaluator](evaluator-configuration.md) | You need to describe JVM or TypeScript evidence, module ownership, paths, freshness, output, or direct CLI invocation. |
-| [Run the evaluator from JUnit](junit-adapter.md) | You want the complete configured evaluator verdict as an in-process JUnit 5 assertion. |
+| [Run the evaluator from JUnit](junit-adapter.md) | You want the complete configured evaluator verdict as an in-process JUnit Jupiter assertion. |
 | [Define repository analysis scope](repository-scope.md) | You need the IDE, reports, standalone CI, and ArchUnit to exclude the same generated, vendored, or deliberately fenced architecture units. |
 | [Govern cycle decisions](governance-decisions.md) | You need to create, review, understand, repair, or remove records in `.atlasarc/governance/cycles.json`. |
 | [Establish a cycle-debt baseline](cycle-debt-baseline.md) | You are adopting the gate in a repository with existing cycles and want to record the current backlog as exact Debt before new cycles start failing. |

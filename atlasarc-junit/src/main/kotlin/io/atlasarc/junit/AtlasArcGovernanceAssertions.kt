@@ -8,7 +8,7 @@ import java.io.PrintStream
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Path
 
-/** JUnit 5 assertions backed by the configured AtlasArc.io evaluator. */
+/** JUnit Jupiter assertions backed by the configured AtlasArc.io evaluator. */
 object AtlasArcGovernanceAssertions {
     private val defaultConfigPath: Path = Path.of(".atlasarc/evaluator.json")
 

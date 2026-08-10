@@ -13,7 +13,7 @@ standalone CI evaluator, JUnit adapter, and ArchUnit adapter.
 - `atlasarc-ci` owns configuration, headless acquisition, output renderers, exit codes, and the
   executable distribution. It reuses the ArchUnit JVM evidence adapter and depends on core for all
   governance semantics.
-- `atlasarc-junit` exposes the configured evaluator as a JUnit 5 assertion. It depends on
+- `atlasarc-junit` exposes the configured evaluator as a JUnit Jupiter assertion. It depends on
   `atlasarc-ci`, performs no separate acquisition or evaluation, and must preserve the evaluator's
   JVM, TypeScript, and mixed-stack behavior.
 - The private AtlasArc.io for IntelliJ repository consumes these public coordinates. Never introduce

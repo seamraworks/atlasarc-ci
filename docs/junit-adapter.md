@@ -1,7 +1,7 @@
 # Run AtlasArc.io CI from JUnit
 
 The `atlasarc-junit` adapter runs the configured AtlasArc.io evaluator in-process and turns its
-verdict into an ordinary JUnit 5 assertion. It is the direct test-lifecycle path for Java, Kotlin,
+verdict into an ordinary JUnit Jupiter assertion. It is the direct test-lifecycle path for Java, Kotlin,
 TypeScript, and mixed repositories. It does not launch the standalone JAR and does not require the
 test to use ArchUnit annotations or an `ArchRule`.
 

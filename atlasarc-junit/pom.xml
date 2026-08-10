@@ -8,7 +8,7 @@
   </parent>
   <artifactId>atlasarc-junit</artifactId>
   <name>AtlasArc.io JUnit Adapter</name>
-  <description>JUnit 5 assertions for the configured AtlasArc.io cycle-governance evaluator.</description>
+  <description>JUnit Jupiter assertions for the configured AtlasArc.io cycle-governance evaluator.</description>
   <dependencies>
     <dependency><groupId>io.atlasarc</groupId><artifactId>atlasarc-ci</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>org.jetbrains.kotlin</groupId><artifactId>kotlin-stdlib</artifactId></dependency>

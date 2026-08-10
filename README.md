@@ -53,7 +53,7 @@ rules, and cycle calculation. Choose the boundary that fits the owning build.
 
 | | JUnit adapter | Standalone evaluator | ArchUnit adapter |
 |---|---|---|---|
-| Best fit | JUnit 5 projects that want the complete configured JVM, TypeScript, or mixed-stack verdict in ordinary tests | Non-JUnit pipelines or a tool-neutral process and machine-output boundary | Java/Kotlin projects whose architecture suite already imports classes through ArchUnit |
+| Best fit | JUnit Jupiter projects that want the complete configured JVM, TypeScript, or mixed-stack verdict in ordinary tests | Non-JUnit pipelines or a tool-neutral process and machine-output boundary | Java/Kotlin projects whose architecture suite already imports classes through ArchUnit |
 | Developer feedback | Runs in-process with ordinary IDE, Maven, and Gradle tests | Runs when a task, script, or developer invokes the process | Runs as a native `ArchRule` in the existing architecture test |
 | Failure contract | JUnit assertion failure | Process exit code | ArchUnit violation |
 | Output | Human evaluator detail in the test failure | Human text, JSON, or SARIF | Normal JUnit/ArchUnit reporting |
@@ -100,7 +100,7 @@ nothing and stay green only when rejection happens for the intended AtlasArc.io 
 
 ## Run the configured evaluator from JUnit
 
-`io.atlasarc:atlasarc-junit:1.4.0` is an in-process JUnit 5 assertion over the same configured
+`io.atlasarc:atlasarc-junit:1.4.0` is an in-process JUnit Jupiter assertion over the same configured
 evaluator used by the CLI. It can therefore evaluate Java, Kotlin, TypeScript, or a mixed-stack
 `evaluator.json` in an ordinary test without adopting ArchUnit's test API. Add it as a test
 dependency:
@@ -421,7 +421,7 @@ All artifacts use the `io.atlasarc` group, share one version, and are released t
 |---|---|
 | `atlasarc-governance-core` | Portable schemas, repository scope, evidence contract, validation, matching, coverage, and deterministic cycle verdict. |
 | `atlasarc-ci` | Standalone configuration, JVM/TypeScript acquisition, renderers, exit codes, and executable distribution. |
-| `atlasarc-junit` | JUnit 5 assertion over the configured evaluator, including JVM, TypeScript, and mixed-stack input. |
+| `atlasarc-junit` | JUnit Jupiter assertion over the configured evaluator, including JVM, TypeScript, and mixed-stack input. |
 | `atlasarc-archunit` | JVM evidence acquisition and the Java-friendly native ArchUnit rule. |
 
 Adapters can depend only on the portable engine:
